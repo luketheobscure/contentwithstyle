@@ -25,10 +25,10 @@ module Jekyll
 
       for post in self.posts
         date_current = post.date.strftime('/archive/date/%Y/%B')
-
+        date_category = post.date.strftime('%B %Y')
+        
         if !dates.include? date_current 
           dates << date_current
-          date_category = post.date.strftime('%B %Y')
 
           date_index = ArchivePage.new(self, self.source, date_current, date_category)
           date_index.render(self.layouts, site_payload)
@@ -54,8 +54,12 @@ module Jekyll
         #   # Record the fact that this page has been added, otherwise Site::cleanup will remove it.
         #   self.pages << author_index
         # end
-        
       end
+
+      top_index = ArchivePage.new(self, self.source, '/archive', date_category)
+      top_index.render(self.layouts, site_payload)
+      top_index.write(self.dest)
+      self.pages << top_index
     end
   end
   

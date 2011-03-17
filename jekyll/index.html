@@ -3,22 +3,27 @@ layout: default
 title: false
 ---
 
-{% for post in site.posts offset: 0 limit: 5 %}
+
 <div class="article">
-    <h2><a href="{{ post.permalink }}">{{ post.title }}</a></h2>
+    {% for post in site.posts offset: 0 limit: 1 %}{% include article_teaser.html %}{% endfor %}
+</div>    
 
-    <p class="credit">by {{ post.author }} on {{ post.dateformatted }}</p>
+<div class="row clearfix">
+    <div class="article left">
+        {% for post in site.posts offset: 1 limit: 1 %}{% include article_teaser.html %}{% endfor %}
+    </div>    
 
-    <div class="excerpt"> 
-        {% if post.excerpt %}
-            {{ post.excerpt }}  
-        {% else: %}
-            <p>{{ post.content | strip_html | truncatewords: 25 }}</p>
-        {% endif%}
-    </div>
-
-    <p class="links clearfix">
-        <a href="{{ post.permalink }}" class="article-link">Read Article</a>
-    </p>
+    <div class="article right">
+        {% for post in site.posts offset: 2 limit: 1 %}{% include article_teaser.html %}{% endfor %}
+    </div>    
 </div>
-{% endfor %}
+
+<div class="row clearfix">
+    <div class="article left">
+        {% for post in site.posts offset: 3 limit: 1 %}{% include article_teaser.html %}{% endfor %}
+    </div>    
+
+    <div class="article right">
+        {% for post in site.posts offset: 4 limit: 1 %}{% include article_teaser.html %}{% endfor %}
+    </div>    
+</div>

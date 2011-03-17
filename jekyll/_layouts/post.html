@@ -1,0 +1,18 @@
+---
+layout: article
+---
+
+<ul class="breadcrumb clearfix">
+    <li class="home"><a href="/">Content with Style</a></li>
+    <li><a href="{{ page.permalink }}" class="active">{{ page.title }}</a></li>
+</ul>
+
+<h1>{{ page.title }}</h1>
+
+<div class="info clearfix">
+    <p class="credit">by {{ page.author }} on {{ page.dateformatted }}</p>
+</div>
+
+<div class="article">
+    {{ content }}
+</div>

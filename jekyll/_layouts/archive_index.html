@@ -1,0 +1,23 @@
+---
+layout: default
+---
+
+{% for post in site.categories[page.category]  %}
+<div class="article">
+    <h2><a href="{{ post.permalink }}">{{ post.title }}</a></h2>
+
+    <p class="credit">by {{ post.author }} on {{ post.dateformatted }}</p>
+
+    <div class="excerpt"> 
+        {% if post.excerpt %}
+            {{ post.excerpt }}  
+        {% else: %}
+            <p>{{ post.content | strip_html | truncatewords: 25 }}</p>
+        {% endif%}
+    </div>
+
+    <p class="links clearfix">
+        <a href="{{ post.permalink }}" class="article-link">Read Article</a>
+    </p>
+</div>
+{% endfor %}

@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        {% include header.html %}
+        <link rel="stylesheet" title="Default" href="/3rdparty/highlight/styles/github.css">
+    </head>
+
+    <body class="article">
+    
+        <div class="header">
+            <div class="inner">
+                <ul class="clearfix">
+                    <li><a href="/" class="home">Home</a></li>
+                    <li><a href="/archive" class="archive">Archive</a></li>
+                </ul>
+            </div>
+        </div>
+    
+        {% include titlerow.html %}
+
+        <div class="content clearfix">
+            <div class="main-col">
+                {{ content }}
+            </div>
+            
+            <div class="sidebar">
+                <div class="box date">
+                    <h2>Browse by Date</h2>
+                    {% archive_by_date %}
+                </div>
+            </div>
+        </div>
+
+        <ul>
+          {% for monthly_archive in site.monthly_archives reversed %}
+          <li>
+            <a href="{{ site.baseurl }}/{{ monthly_archive.url }}">{{ monthly_archive.name }}</a> ({{ monthly_archive.posts | size }} posts)
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% include footer.html %}
+    </body>
+</html>
+

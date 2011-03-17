@@ -1,0 +1,64 @@
+---
+layout : post
+permalink : /content/command-line-search-and-replace/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Command line search and replace?"
+date : "2008-09-30 06:24:54"
+dateformatted : "September 30 2008, 06:24"
+excerpt : |
+    <p>So I&#8217;m asking around for the best way to do search and replace in command line &#8230;</p>
+categories : 
+   - September 2008
+   - "Pascal Opitz"
+---
+
+<p>
+So I'm asking around for the best way to do search and replace in command line ... I have to copy files into another folder, but replace one word.
+</p>
+
+<p>
+<a href="http://www.cyberdummy.co.uk/">Tom</a> pointed me towards using perl:
+</p>
+
+<pre><code>
+cp ./source/* ./destination/
+cd ./destination/
+perl -pi -e 's/foo/bar/' * 
+</code></pre>
+
+<p>
+<a href="http://www.redwiredesign.com/profile/justin_finkelstein.html">Justin</a> in contrast uses sed, and a loop:
+</p>
+
+<pre><code>
+cd ./source
+for A in `ls`; do  echo sed 's/foo/bar/' $A > ./destination/$A; done;
+</code></pre>
+
+<p>
+Which brought me to finally look into the man pages for <a href="http://lowfatlinux.com/linux-sed.html">sed</a> , the linux stream editor.
+Apparanetly the -i flag enables in-place editing there as well, and you could do something like tom did with sed:
+</p>
+
+
+<pre><code>
+cp ./source/* ./destination/
+cd ./destination/
+sed -i '' 's/foo/bar/' *
+</code></pre>
+
+<p>
+Initially, trying the -i flag, I got weird warnings like this:
+<br />
+sed: 1: "index.shtml": command i expects  followed by text
+</p>
+
+<p>
+This is due to the missing extension that you need to provide for the -i flag, in the case above I used '' to not create any backup files.
+If you provide '.bak' it will create backup files, i.e. index.shtml.bak before editing.
+</p>
+
+<p>
+Happy search and replace!
+</p>

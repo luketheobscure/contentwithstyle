@@ -1,0 +1,50 @@
+---
+layout : post
+permalink : /content/ndiswrapper-and-fedora-core-6/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Ndiswrapper and Fedora Core 6"
+date : "2007-01-18 10:30:02"
+dateformatted : "January 18 2007, 10:30"
+excerpt : |
+    <p>How to set up a DWL-G650+ Wireless card for Fedora core 6.</p>
+categories : 
+   - January 2007
+   - "Pascal Opitz"
+---
+
+	<p>For me, the key to get this working is to NOT attempt to create the ath0 Interface, but <a href="http://ndiswrapper.sourceforge.net/mediawiki/index.php/Fedora#Configuration_using_script_system">using ethX as interface</a> instead.</p>
+
+	<p>1) First I updated the whole system to use the latest rpm&#8217;s</p>
+
+<pre><code>sudo yum update</code></pre>
+
+	<p>2) I set up my yum to use the <a href="http://rpm.livna.org/rlowiki/UsingLivna">livna rpms</a></p>
+
+<pre><code>rpm -ivh http://rpm.livna.org/livna-release-6.rpm</code></pre>
+
+	<p>3) I installed ndiswrapper using YUM:</p>
+<pre><code>sudo yum install ndiswrapper</code></pre>
+
+	<p>4) I edited my modprobe.conf adding the following lines:</p>
+
+<pre><code>
+options ndiswrapper if_name=eth1
+alias eth1 ndiswrapper
+</code></pre>
+
+	<p>5) I restarted</p>
+
+	<p>6) I downloaded the <a href="ftp://ftp.dlink.co.uk/wireless/dwl-g650+_rev_Bx">XP drivers for the card</a> and unzipped the file, then loaded the driver into ndiswrapper:</p>
+
+<pre><code>sudo ndsiwrapper -i WinXP/GPLUS.inf</code></pre>
+
+	<p>7) Finally I executed the modprobe command to load ndsiwrapper as driver:</p>
+<pre><code>sudo modprobe ndsiwrapper</code></pre>
+
+	<p>And finally I was able to go to the network administration panel in GNOME and change the settings for the card like for any other network interface.</p>
+
+
+
+
+ 

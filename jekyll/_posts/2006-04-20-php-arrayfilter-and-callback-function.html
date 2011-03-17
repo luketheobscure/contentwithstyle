@@ -1,0 +1,47 @@
+---
+layout : post
+permalink : /content/php-arrayfilter-and-callback-function/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "php: array_filter and callback function"
+date : "2006-04-20 09:48:47"
+dateformatted : "April 20 2006, 09:48"
+excerpt : |
+    <p>Sometimes array_pop is just not enough. You might have to strip out something from an array that is 2 dimensional or do some more complicated adjustments to the array values. In this case you can use array_filter and a callback function.
+    </p>
+categories : 
+   - April 2006
+   - "Pascal Opitz"
+---
+
+	<p>Sometimes array_pop is just not enough. You might have to strip out something from an array that is 2 dimensional or do some more complicated adjustments to the array values. In this case you can use array_filter and a callback function.</p>
+
+	<p>The following example is class based:</p>
+
+<pre><code>
+&lt;?
+class test
+{
+  function test()
+  {
+    $arr = array();
+    $arr[] = array('ID' =&gt; 1, 'name' =&gt; 'first');
+    $arr[] = array('ID' =&gt; 2, 'name' =&gt; 'second');
+
+    print_r($arr);
+    $arr = array_filter($arr, array(&#38;$this, "filter"));  
+    print_r($arr);
+  }
+
+  function filter($var)
+  {
+    return($var['name'] != 'first');
+  }
+}
+
+$test = new test();
+?&gt;
+</code></pre>
+
+
+ 

@@ -1,0 +1,69 @@
+---
+layout : post
+permalink : /content/nodestalker-a-beanstalkd-client-for-nodejs/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Nodestalker - A beanstalkd client for node.js"
+date : "2010-05-14 12:31:15"
+dateformatted : "May 14 2010, 12:31"
+excerpt : |
+    <p>Following my <a href="http://www.contentwithstyle.co.uk/content/php-worker-processes-with-beanstalk-and-daemontools">previous article</a> about PHP and <a href="http://kr.github.com/beanstalkd/">beanstalkd</a> I was keen to use beanstalk in combination with node.js, but wasn't entirely satisfied with the available <a href="http://github.com/benlund/node-beanstalk-client">implementation</a>. So as a little brain exercise I wrote <a href="http://github.com/pascalopitz/nodestalker">nodestalker</a> from scratch.</p>
+categories : 
+   - May 2010
+   - "Pascal Opitz"
+---
+
+<p>Following my <a href="http://www.contentwithstyle.co.uk/content/php-worker-processes-with-beanstalk-and-daemontools">previous article</a> about PHP and <a href="http://kr.github.com/beanstalkd/">beanstalkd</a> I was keen to use beanstalk in combination with node.js, but wasn't entirely satisfied with the available <a href="http://github.com/benlund/node-beanstalk-client">implementation</a>. So as a little brain exercise I wrote <a href="http://github.com/pascalopitz/nodestalker">nodestalker</a> from scratch.</p>
+
+<h2>Usage</h2>
+
+<p>Usage should be pretty straight forward. Below is the code for putting a job into the queue:</p>
+
+<pre><code>var sys = require('sys');
+var bs = require('../lib/beanstalk_client');
+var client = bs.Client();
+
+client.use('default').onSuccess(function(data) {
+  sys.puts(sys.inspect(data));
+
+  client.put('my job').onSuccess(function(data) {
+    sys.puts(sys.inspect(data));
+    client.disconnect();
+  });
+});
+</code></pre>
+
+<h2>Issues during development</h2>
+
+<p>Writing it wasn't as easy as I expected, but that was because I didn't read the documentation on sockets properly, and missed out on <code>stream.setKeepAlive()</code> and <code>stream.setNoDelay()</code> first, which made my sockets close on me in what I thought was a random manner.</p>
+
+<p>Another issue I had was <a href="http://github.com/visionmedia/js-yaml">the yaml library for node</a>, which just didn't like the yaml formatted beanstalk output, which doesn't contain the expected indentations. Not sure why, maybe a yaml version conflict or something, but I hacked the yaml parsing with some regular expressions.</p>
+
+<pre><code>var corrected = str.replace(/\n-\ ([\w\d_-]+)/mig, '\n  - \'$1\'') //indent list
+          .replace(/(\w)\-(\w)/mgi, '$1_$2') // replace minuses in hash names
+          .replace(/\n([\w\d_-]+)\:\ ([\.\,\w\d_-]+)/mig, '\n  $1: \'$2\''); // format hashes
+try {
+  return kiwi.require('yaml').eval(corrected);
+} catch(e) {
+  Debug.log(e);
+  Debug.log(corrected);
+  return str;
+}
+</code></pre>
+
+<h2>Demo application: Beanspector</h2>
+
+<p>I also included a demo application, which I baptised "beanspector". It is a simple command line client to inspect, list and empty tubes and put some content into them. This is how I use it in action:</p>
+
+<pre><code>$ node beanspector.js -lt
+[ 'default', 'confirm' ]
+$ node beanspector.js -pt default "here"
+61
+$ node beanspector.js -lc default
+listing tube default
+{ id: '61', data: 'here' }
+</code></pre>
+
+<h2>Download</h2>
+
+<p><a href="http://github.com/pascalopitz/nodestalker">Get nodestalker from GitHub</a>, and feel free to fork and do some improvements if you want.</p>

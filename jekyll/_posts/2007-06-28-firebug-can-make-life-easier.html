@@ -1,0 +1,35 @@
+---
+layout : post
+permalink : /content/firebug-can-make-life-easier/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Firebug can make life easier"
+date : "2007-06-28 11:06:51"
+dateformatted : "June 28 2007, 11:06"
+excerpt : |
+    <p>Today I was pointed to a couple of handy functionalities in the <a href="http://www.getfirebug.com/">Firebug plugin</a> by <a href="http://www.magnetikonline.com">Peter Mescalchin</a>, who&rsquo;s one of the  UI developers I am currently working with.</p>
+categories : 
+   - June 2007
+   - "Pascal Opitz"
+---
+
+	<p>Today I was pointed to a couple of handy functionalities in the <a href="http://www.getfirebug.com/">Firebug plugin</a> by <a href="http://www.magnetikonline.com">Peter Mescalchin</a>, who&#8217;s one of the  UI developers I am currently working with.</p>
+
+	<p>The highlight here is the <code>console.log()</code> function for debugging. This first of all gets rid of all those alerts that pause the application till we click the button of the alert box.</p>
+
+	<p>When we pass a dom node to <code>console.log()</code> instead of a string, we&#8217;ll have the dom node in the console, that on rollover highlights it&#8217;s position on the page.</p>
+
+	<p>Amazing is that this is even possible with an array of nodes, i.e. out of <code>getElementsByTagName()</code> or something similar.<br />
+The output will be a nice little list of nodes that on rollover can be identified in the browser window.</p>
+
+	<p>Changing <code>console.log()</code> to <code>console.dir()</code> gives an even more detailed view on the object, with properties and so on, vaguely similar to a print_r or vardump in PHP, just that the console lets you collapse the single nodes etc.</p>
+
+	<p>Another great feature is the possibility to set breakpoints and debug your javascript application line by line.</p>
+
+	<p>For a deeper insight check out the <a href="http://yuiblog.com/blog/2007/01/26/video-hewitt-firebug/">video featuring Joe Hewitt</a> or read the <a href="http://www.getfirebug.com/console.html">reference for the firebug console API</a></p>
+
+	<p>Thanks for the tip Pete!</p>
+
+
+
+ 

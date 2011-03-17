@@ -1,0 +1,50 @@
+---
+layout : post
+permalink : /content/js-custom-events-roundup/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "JS custom events roundup"
+date : "2008-11-02 20:06:22"
+dateformatted : "November 2 2008, 20:06"
+excerpt : |
+    <p>With independent UI components, that not always know about each other, custom events come in handy.</p>
+categories : 
+   - November 2008
+   - "Pascal Opitz"
+---
+
+<p>With independent UI components, that not always know about each other, custom events come in handy. They enable us to code components that will populate hooks for other objects that then can be used to trigger different behaviours. Even better, the various objects that do pick up on our custom events don't necessarily have to be anticipated, but can subscribe to the provided events at any point throughout the development process. <a href="http://ajaxian.com/archives/enjoying-the-observer-pattern-with-custom-events">The observer pattern</a> is a good example for this.</p> 
+
+<p>But with different implementations in <a href="http://msdn.microsoft.com/en-us/library/ms536343%28VS.85%29.aspx">IE</a> and <a href="https://developer.mozilla.org/En/DOM/Element.addEventListener">Firefox</a> to start with, scripting you own custom events hasn't been easy from the start.</p>
+
+<p>Thankfully, a while ago some folk did good work in <a href="http://www.truerwords.net/articles/web-tech/custom_events.html">wrapping up the two implementations into a single class</a> for custom events.</p> 
+
+<p>Nowadays, most major javascript toolkits have some sort of custom event facility.</p>
+
+<p>From YUI I am familiar with the CustomEvents class, which enables us to create custom events, then fire them or subscribe to them</p>
+
+<pre><code>var foo = new YAHOO.util.CustomEvent('foo event');
+foo.subscribe(function(type, args){}, true);
+foo.fire();
+</code></pre>
+
+<p>The way JQuery uses custom events is by attaching custom events with
+the bind function to a DOM element wrapped in the $ function, which
+then can be triggered:</p>
+
+<pre><code>
+$('#foo').bind('bar_event', function(event, param){});
+$('#foo').trigger('bar_event');</code></pre>
+
+<p>I didn't read up on this yet, but I am sure that other toolkits like prototype, dojo and mootools will have similar event models at hand.</p><h2>Further reading</h2>
+
+<ul>
+
+
+
+<li><a href="http://developer.yahoo.com/yui/event/#customdefine">YUI Documentation for CustomEvent</a></li>
+<li>The <a href="http://www.yuiblog.com/blog/2007/09/13/bubbling-library-by-caridy/">YUI blog</a> for a more detailed reading on YUI custom events and event bubbling</li>
+<li><a href="http://www.dustindiaz.com/custom-events/">Dustin Diaz - Publishing Custom Events in JavaScript</a></li>
+<li><a href="http://docs.jquery.com/Events">JQuery Events documentation</a></li>
+<li>Ajaxian on the <a href="http://ajaxian.com/archives/enjoying-the-observer-pattern-with-custom-events">Observer Pattern</a></li>
+</ul>

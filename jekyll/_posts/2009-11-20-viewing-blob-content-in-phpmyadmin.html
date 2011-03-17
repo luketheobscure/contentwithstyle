@@ -1,0 +1,27 @@
+---
+layout : post
+permalink : /content/viewing-blob-content-in-phpmyadmin/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "Viewing BLOB content in phpMyAdmin"
+date : "2009-11-20 08:25:39"
+dateformatted : "November 20 2009, 08:25"
+excerpt : |
+    <p>PhpMyAdmin seems to have changed their concept of how to view BLOB content multiple times, making it hard to find a solution for my recent install.</p>
+categories : 
+   - November 2009
+   - "Matthias Willerich"
+---
+
+<p>In my phpMyAdmin installation, version 3.1.1, none of the old style config settings such as</p>
+<pre>$cfgShowBlob = true</pre>
+<p> or</p>
+<pre>$cfg['ShowBlob']</pre>
+<p>had any effect, and the solution was terribly elusive. "view blob", "show blob", "display blob", all that Google suggested were people asking the same question, at various ages of the internet.</p>
+<p>Even more annoying, the most common answer was "Why would you want to do that?", and too many times I was reading that they shouldn't be read anyway, because it could be large amounts of, well, binary data, bla bla bla.</p>
+<p>In my case this makes very much sense, though, because I was looking at serialized data objects. Don't ask me why it's not a TEXT field (another smartypants suggestion in a forum), that's just the setup I was dealing with.</p>
+<p>After much digging and the wish for a search engine that will suggest better search terms to me, I finally decided to bother the source instead, and found "display_blob". Hurray! It comes in this form:</p>
+<pre>$_SESSION['userconf']['display_blob'];</pre>
+<p>All you need to do is set this session variable (possibly by sticking it into the config? I didn't try it out), or alternatively: Open the content frame and put</p> <pre>&amp;display_blob=true</pre>
+<p>into the querystring, and it will keep it in the session for you, when you use the frameset as normal afterwards.</p>
+<p>While writing this, I also <a href="http://www.yegq.org/archives/177">saw this page</a>, can anyone translate?</p>

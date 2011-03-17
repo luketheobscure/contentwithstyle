@@ -1,0 +1,71 @@
+---
+layout : post
+permalink : /content/controller-separation-with-actionstack-and-zend-layout/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Controller separation with ActionStack and Zend_Layout"
+date : "2008-11-06 22:47:11"
+dateformatted : "November 6 2008, 22:47"
+excerpt : |
+    <p>Thinking about my past projects, I realized that previously my
+    controllers where doing way too much that they shouldn't, and quickly
+    the comments controller would update user content and so on. I had
+    a good look at how I wanted to structure my code, and
+    decided that the controllers only should do things that belong to them,
+    but call other controllers if they needed stuff from them.</p>
+categories : 
+   - November 2008
+   - "Pascal Opitz"
+---
+
+<p>Thinking about my past projects, I realized that previously my
+controllers where doing way too much that they shouldn't, and quickly
+the comments controller would update user content and so on. I had
+a good look at how I wanted to structure my code, and
+decided that the controllers only should do things that belong to them,
+but call other controllers if they needed stuff from them.</p>
+
+<h2>A Built In Solution</h2>
+
+<p>The Zend view renderer actually gives you a mechanism for this. In
+every action you can set the response segment that you are targeting.
+In combination with the action stack helper, this enables you to call
+all the actions that you need and then output all the response segments
+you have created where you'd need them within the layout, separating
+bits of markup into single actions.</p>
+<p>Let's have a look at a code example:</p>
+<pre><code>
+class FooController extends BaseController {
+ public function indexAction() {
+ $this-&gt;_helper-&gt;actionStack('list', 'foo');
+ $this-&gt;_helper-&gt;actionStack('foo', 'bar');
+ $this-&gt;_helper-&gt;actionStack('bar', 'bar');
+ }
+
+ public function listAction() {
+ $this-&gt;_helper-&gt;viewRenderer-&gt;setResponseSegment('list');
+ }
+}
+
+class BarController extends BaseController
+{
+ public function fooAction() {
+ $this-&gt;_helper-&gt;viewRenderer-&gt;setResponseSegment('foo');
+ }
+
+ public function barAction() {
+ $this-&gt;_helper-&gt;viewRenderer-&gt;setResponseSegment('bar');
+ }
+}
+</code></pre>
+<p>Then in the layout:</p>
+<pre><code>
+&lt;?php
+ echo $this-&gt;layout()-&gt;bar; 
+ echo $this-&gt;layout()-&gt;foo; 
+ echo $this-&gt;layout()-&gt;list; 
+?&gt; </code></pre><h2>Further Reading</h2><ul>
+
+<li><a href="http://framework.zend.com/manual/en/zend.controller.actionhelpers.html#zend.controller.actionhelpers.actionstack">Zend Action Stack Helper</a></li>
+<li><a href="http://www.nabble.com/Zend_Layout-and-ActionStack-td15788789.html">Zend_Layout and ActionStack</a></li>
+</ul>

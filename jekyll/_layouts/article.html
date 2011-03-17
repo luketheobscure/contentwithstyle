@@ -24,10 +24,9 @@
             </div>
             
             <div class="sidebar">
-                <div class="box date">
-                    <h2>Browse by Date</h2>
-                    {% archive_by_date %}
-                </div>
+                {% include info.html %}
+                {% include feed.html %}
+                {% include archive_by_date.html %}
             </div>
         </div>
 

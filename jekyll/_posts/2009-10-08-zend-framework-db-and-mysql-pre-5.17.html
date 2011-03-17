@@ -1,0 +1,61 @@
+---
+layout : post
+permalink : /content/zend-framework-db-and-mysql-pre-5.17/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Zend Framework DB and Mysql pre 5.17"
+date : "2009-10-08 10:38:34"
+dateformatted : "October 8 2009, 10:38"
+excerpt : |
+    <p>I was getting weird errors when running multiple queries with Zend Framework, that I just couldn't replicate in my dev environment.</p>
+categories : 
+   - October 2009
+   - "Pascal Opitz"
+---
+
+<p>I was getting weird errors when running multiple queries with Zend Framework, that I just couldn't replicate on my local environment.</p>
+
+<pre><code>
+Exception information:
+
+Message: SQLSTATE[HY000]: General error: 2014 Cannot execute queries while other unbuffered queries are active. Consider using PDOStatement::fetchAll(). Alternatively, if your code is only ever going to run against mysql, you may enable query buffering by setting the PDO::MYSQL_ATTR_USE_BUFFERED_QUERY attribute.
+Stack trace:
+
+#0 /project/ZendFramework-1.7.1/Zend/Db/Statement.php(109): Zend_Db_Statement_Pdo-&gt;_prepare('UPDATE `foo...')
+#1 /project/ZendFramework-1.7.1/Zend/Db/Adapter/Pdo/Abstract.php(170): Zend_Db_Statement-&gt;__construct(Object(Zend_Db_Adapter_Pdo_Mysql), 'UPDATE `foo...')
+#2 /project/ZendFramework-1.7.1/Zend/Db/Adapter/Abstract.php(429): Zend_Db_Adapter_Pdo_Abstract-&gt;prepare('UPDATE `foo...')
+#3 /project/ZendFramework-1.7.1/Zend/Db/Adapter/Pdo/Abstract.php(220): Zend_Db_Adapter_Abstract-&gt;query('UPDATE `foo...', Array)
+#4 /project/ZendFramework-1.7.1/Zend/Db/Adapter/Abstract.php(551): Zend_Db_Adapter_Pdo_Abstract-&gt;query('UPDATE `foo...', Array)
+
+...
+</code></pre>
+
+<p>Turns out the server runs MySQL pre 5.17:</p>
+
+<pre><code>
+$ yum list installed | grep mysql
+mysql.i386                              5.0.45-7.el5                   installed
+mysql-server.i386                       5.0.45-7.el5                   installed
+php-mysql.i386                          5.1.6-23.2.el5_3               installed
+</code></pre>
+
+<p>In order to fix this we need to turn on query buffering:</p>
+
+<pre><code>
+$pdoParams = array(
+    PDO::MYSQL_ATTR_USE_BUFFERED_QUERY =&gt; true
+);
+
+$params = array(
+    'host'           =&gt; '127.0.0.1',
+    'username'       =&gt; 'webuser',
+    'password'       =&gt; 'xxxxxxxx',
+    'dbname'         =&gt; 'test',
+    'driver_options' =&gt; $pdoParams
+);
+
+$db = Zend_Db::factory('Pdo_Mysql', $params);
+</code></pre>
+
+<p>
+Thanks to <a href="http://mysqltalk.wordpress.com/">Joe Devon from MySQL Talk</a> for <a href="http://mysqltalk.wordpress.com/2008/11/09/enabling-mysql-query-cache-with-zend-framework-through-pdomysql_attr_use_buffered_query/">pointing out the relevant part of the Zend Framework documentation</a> that points out why it happens and how to fix it.</p>

@@ -1,0 +1,85 @@
+---
+layout : post
+permalink : /content/4-ssh-config-tips-for-faster-remote-working/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "4 ssh config tips for faster remote working"
+date : "2009-04-17 12:00:02"
+dateformatted : "April 17 2009, 12:00"
+excerpt : |
+    <p>If your ssh experience was so far limited to typing your username and password lots of times, this post is for you.</p>
+categories : 
+   - April 2009
+   - "Matthias Willerich"
+---
+
+<p>With the vast majority of web developers deploying their own code, and ssh playing a central role in the toolbox, I felt that tweaking this part of my work saves me some time, and if not, definitely some frustration over mistyping passwords and host names.</p>
+<p>So, for myself as much as everyone out there, here is my collected useful knowledge that has helped me ease the pain of remote work.</p>
+		<h3>1. Execute commands remotely as one-liners</h3>
+		<p>This is what some deployment tools such as <a href="http://rubyhitsquad.com/Vlad_the_Deployer.html">vlad</a> use, but for a quick look at something, it cuts out valuable seconds you could look at web comics instead.</p>
+
+		<p>Let's try a simple example:</p>
+		<pre><code>
+matthias:~ matthias$ ssh remoteuser@myserver.pretendco.com ls -l
+remoteuser@myserver.pretendco.com's password: 
+total 804
+lrwxrwxrwx   1 remoteuser remoteuser      31 Nov 10  2007 access-logs -> /links/to/my/access-logs
+drwxr-xr-x   2 remoteuser remoteuser    2048 Apr  6  2008 cgi-bin
+-rw-r--r--   1 remoteuser remoteuser  808417 Jul 17  2007 error_log_dump
+drwxr-x---   3 remoteuser mail     2048 Oct  1  2007 etc
+drwxrwx---   7 remoteuser remoteuser    2048 Apr  4 02:33 mail
+drwxr-x---   3 remoteuser remoteuser    2048 May 23  2008 public_ftp
+drwxr-x---  30 remoteuser nobody   2048 Dec  4 06:33 public_html
+drwxr-xr-x   7 remoteuser remoteuser    2048 Sep 24  2008 tmp
+lrwxrwxrwx   1 remoteuser remoteuser      11 Apr  1  2006 www -> public_html
+matthias:~ matthias$
+		</code></pre>
+		
+		<p>You can even <a href="http://lookherefirst.wordpress.com/2007/11/29/executing-command-remotely-via-ssh/">pipe through to a remote command</a>. Here's an example taken from Look Here First, where the content of a local file is concatenated to a remote file.</p>
+		<pre><code>
+matthias:~ matthias$ cat localfile.txt | ssh remoteuser@myserver.pretendco.com "cat - >> remotefile.txt"
+		</code></pre>
+
+		<h3>2. Add your public key to your remote server</h3>
+		<p>Next let's see how we can get around typing our password all the time. One way of doing this is to <a href="http://sial.org/howto/openssh/publickey-auth/" title="OpenSSH Public Key Authentication">add your public key to your remote server</a>.</p>
+		<pre><code>
+# first, upload public key from client to server
+client$ scp ~/.ssh/id_rsa.pub remoteuser@myserver.pretendco.com:~
+
+# next, setup the public key on server
+server$ mkdir ~/.ssh
+server$ chmod 700 ~/.ssh
+server$ cat ~/id_rsa.pub >> ~/.ssh/authorized_keys
+server$ chmod 600 ~/.ssh/authorized_keys
+server$ rm ~/id_rsa.pub
+		</code></pre>
+		<p>Of course, we can combine with the previous example and run it like this:</p>
+		<pre><code>
+matthias:~ matthias$ cat ~/.ssh/id_dsa.pub | ssh remoteuser@myserver.pretendco.com "cat - >> ~/.ssh/authorized_keys2"
+		</code></pre>
+		<p>Windows users fear not, <a href="http://www.aota.net/Telnet/puttykeyauth.php4" title="Key Authentication with PuTTY">you can do this too</a>, with PuTTY and PuTTYgen.</p>
+
+		<h3>3. Let the ControlMaster handle your sessions</h3>
+		<p>Sadly this might not always possible, maybe your key management on your server is different, or you don't have permissions to the file.</p>
+		<p>Luckily you can get around this by <a href="http://blog.zenlinux.com/?p=270">letting your first ssh connection act as ControlMaster</a>. By adding the following to ~/.ssh/config, you only need to enter your password once, and all parallel sessions won't ask for a password</p>
+		<pre><code>
+Host *
+    ControlMaster auto
+    ControlPath ~/.ssh/master-%r@%h:%p
+		</code></pre>
+
+		<h3>4. Set your user and hostname for your host</h3>
+		<p>Finally, more often than not your username won't be the same on your local machine and on whatever server you'd like to connect to, or your server might not use the default ssh port. Or maybe you're just tired of typing that superlong domain name, and look for a less challenging typing task. ~/.ssh/config to the rescue.</p>
+		<p>As final example:</p>
+		<pre><code>
+Host myserver
+    User remoteuser
+    Port 22022
+    HostName myserver.pretendco.com
+		</code></pre>
+		<p>Most likely you won't need the Port instruction in there, because your server runs ssh on the default port 22, so just drop the line.</p>
+<p>All this allows us something as compact as:</p>
+<pre><code>
+matthias:~ matthias$ ssh myserver mycommand
+</code></pre>
+<p>Have fun, and let's hope this got you into your weekend early!</p>

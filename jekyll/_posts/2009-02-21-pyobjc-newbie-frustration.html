@@ -1,0 +1,23 @@
+---
+layout : post
+permalink : /content/pyobjc-newbie-frustration/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "PyObjC newbie frustration"
+date : "2009-02-21 18:27:25"
+dateformatted : "February 21 2009, 18:27"
+excerpt : |
+    <p>So I was trying out to build a graphical interface for my VHOST shell script, this time in Python, but couldn't get one past hurdle: I need superuser rights to edit /etc/hosts and the httpd.conf.</p>
+categories : 
+   - February 2009
+   - "Pascal Opitz"
+---
+
+<p>So I was trying out to build a graphical interface for my VHOST shell script, this time in Python, but couldn't get one past hurdle: I need superuser rights to edit /etc/hosts and the httpd.conf.</p>
+
+<p>While I was able to build a quick interface for a python script to do essentially the same, using the PyObjC bridge and the Interface Builder, I couldn't figure out how the hell I am supposed to get the authentication going to execute the script as superuser ... and a look into the <a href="http://developer.apple.com/documentation/Security/Reference/authorization_ref/Reference/reference.html#//apple_ref/c/func/AuthorizationExecuteWithPrivileges">documentation</a> does give no clue on how to use Authorization with PyObjC, but only shows a C function ...?</p>
+
+<p>Apart from that I found the Interface Builder pretty intriguing, and I'm starting to like XCode as well. Of course I haven't got much of a clue of how Python is done properly, and especially the underscore convention for actions threw me off at first. Also, what do people mean when they say Pythonic? What makes an app/script/library exactly that?</p>
+
+<p>Of course I am way out of my comfort zone here. Would appreciate some hints and guidance.</p>
+

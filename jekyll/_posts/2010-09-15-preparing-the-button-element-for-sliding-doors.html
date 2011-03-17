@@ -1,0 +1,25 @@
+---
+layout : post
+permalink : /content/preparing-the-button-element-for-sliding-doors/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Preparing the button element for sliding doors"
+date : "2010-09-15 14:20:13"
+dateformatted : "September 15 2010, 14:20"
+excerpt : |
+    <p>A helpful little trick to get the FF button elements into a state where we can apply sliding doors. Via johannes krtek of <a href="http://flachware.com">flachware.com</a></p>
+categories : 
+   - September 2010
+   - "Pascal Opitz"
+---
+
+<p>A helpful little trick to get the FF button elements into a state where we can apply sliding doors. Via johannes krtek of <a href="http://flachware.com">flachware.com</a></p>
+
+<pre><code>
+ button::-moz-focus-inner { /* now you can handle firefox buttons like safari buttons */
+    padding: 0; /* remove inner padding */
+    border: 0; /* remove dotted outline in buttons in firefox */
+}
+</code></pre>
+
+<p>This removes the strange clicking effect Firefox applies to the button elements. Now we can do normal sliding doors stuff with them.</p>

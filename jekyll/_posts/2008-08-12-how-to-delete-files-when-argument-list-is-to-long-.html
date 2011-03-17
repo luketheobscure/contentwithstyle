@@ -1,0 +1,30 @@
+---
+layout : post
+permalink : /content/how-to-delete-files-when-argument-list-is-to-long-/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "How to delete files when argument list is to long ..."
+date : "2008-08-12 11:42:11"
+dateformatted : "August 12 2008, 11:42"
+excerpt : |
+    <p>I had trouble with deleting files, because a simple &#8220;rm -Rf *&#8221; would fail because the argument list was to long.</p>
+categories : 
+   - August 2008
+   - "Pascal Opitz"
+---
+
+	<p>I had trouble with deleting files, because a simple</p>
+
+	<pre><code>rm -Rf *</code></pre>
+
+	<p>would fail because the argument list was to long.<br />
+<a href="http://www.cyberdummy.co.uk">Tom</a> , my former co-worker from <a href="http://www.redwiredesign.com">Redwire</a> times, pointed out that I should utilize xargs.</p>
+
+	<p>A simple </p>
+
+	<pre><code>ls | xargs rm -f</code></pre>
+
+	<p>took quite a while, but did the trick!</p>
+
+
+ 

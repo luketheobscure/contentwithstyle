@@ -1,0 +1,36 @@
+---
+layout : post
+permalink : /content/disabling-text-selection/index.html
+author : "Mike Stenhouse"
+author_id : 3
+title : "Disabling text selection"
+date : "2006-05-11 13:03:10"
+dateformatted : "May 11 2006, 13:03"
+excerpt : |
+    <p>Stopping your users from selecting a page&rsquo;s content text.</p>
+categories : 
+   - May 2006
+   - "Mike Stenhouse"
+---
+
+	<p>While trying to make a table behave in an Excel fashion I came across a little problem. I wanted the table to allow the user to select a range of rows with a Shift+Click&#8230; The problem is that, by default, the browser will select the page&#8217;s text content. This isn&#8217;t something you&#8217;ll want to do very often but it is possible to get around this:</p>
+
+	<p>Firefox can do this from your CSS:</p>
+
+<pre><code>
+table {
+    -moz-user-select: none;
+}
+</code></pre>
+
+	<p>On the table element IE needs:</p>
+
+<pre><code>
+the_table_node.onselectstart = function () {
+    return false;
+};
+</code></pre>
+
+
+
+ 

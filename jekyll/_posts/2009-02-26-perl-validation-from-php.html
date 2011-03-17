@@ -1,0 +1,38 @@
+---
+layout : post
+permalink : /content/perl-validation-from-php/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Perl validation from PHP"
+date : "2009-02-26 11:07:31"
+dateformatted : "February 26 2009, 11:07"
+excerpt : |
+    <p>A quick method to validate perl scripts from PHP. Took me a long time that perl-c does not use stdout but stderr as output stream ...</p>
+    
+categories : 
+   - February 2009
+   - "Pascal Opitz"
+---
+
+<p>A quick method to validate perl scripts from PHP. Took me a long time that perl-c does not use stdout but stderr as output stream ...</p>
+
+<pre><code>
+public function validationErrorPerl($content) {
+  $hash = md5(microtime() . $content);
+  $infile = CACHE_DIR . '/validation_' . $hash . '.pl';
+  $outfile = CACHE_DIR . $this-&gt;config-&gt;cache-&gt;dir . '/validation_' . $hash . '.txt';
+  file_put_contents($infile, $content);
+  $cmd = "/usr/bin/perl -c $infile 2&gt; /dev/null &amp;&gt; $outfile";
+  exec($cmd);
+  $result = file_get_contents($outfile);
+  unlink($infile);
+  unlink($outfile);
+  $result = str_replace($infile, 'perl script', $result);
+  
+  if(strpos($result,'syntax OK') !== false) {
+    return false;
+  }
+  
+  return $result;
+}
+</code></pre>

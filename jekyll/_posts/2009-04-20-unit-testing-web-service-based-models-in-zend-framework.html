@@ -1,0 +1,124 @@
+---
+layout : post
+permalink : /content/unit-testing-web-service-based-models-in-zend-framework/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Unit testing web service based models in Zend Framework"
+date : "2009-04-20 09:37:30"
+dateformatted : "April 20 2009, 09:37"
+excerpt : |
+    <p>Web applications nowadays use an increasingly distributed set of resources. How do we test our MVC applications that use web services in their models?</p>
+categories : 
+   - April 2009
+   - "Pascal Opitz"
+---
+
+<p>Web applications nowadays use an increasingly distributed set of resources. How do we test our MVC applications that use web services in their models?</p>
+
+<h2>What is the problem?</h2>
+
+<p>Unit tests for database driven models are relatively straight forward. Usually we connect to a separate database, containing a known set of data. Since we know the data we can run assertions against it.</p>
+
+<p>However, unit testing models that talk to web services presents us with a different set of problem. Usually our application runs requests against something that is not in our control. Unless the service provider gives us some kind of test mode, we're operating with dynamic live data which shouldn't be used for testing, since it's harder to test in the first place, but also could be harmful to be manipulated.</p>
+
+<p>Let's have a look at two strategies to test out models.</p>
+
+<h2>Mock objects for Services</h2>
+
+<p>If we are using an object to represent the API calls to the service from within our model, i.e. <a href="http://framework.zend.com/manual/en/zend.service.delicious.html">Zend_Service_Delicious</a>, we can swap this object for a mock object. A simple accessor allows us to overwrite private properties of the object:</p> 
+
+<pre><code>
+class DeliciousModel {
+  private $delicious;
+
+  public function __construct() {
+    $this-&gt;delicious = new Zend_Service_Delicious('username', 'password');
+  }
+
+  public function getPosts() {
+    return $this-&gt;delicious-&gt;getAllPosts();
+  }
+
+  public function setProperty($name, $value) {
+    if(UNITTEST_CONTEXT) {
+      $this-&gt;$name = $value;
+    }
+  }
+}
+</code></pre>
+
+<p>Now it's easy swap out private properties from within a unit test:</p>
+
+<pre><code>
+public function testDeliciousModel {
+  $mockPosts = array('foo', 'bar');    
+
+  $deliciousMock = $this-&gt;getMock('Zend_Service_Delicious', array('getAllPosts'));
+  $deliciousMock-&gt;expects($this-&gt;once())
+          -&gt;method('getAllPosts')
+          -&gt;will($this-&gt;returnValue($mockPosts));
+  
+  $model = new DeliciousModel();
+  $model-&gt;setProperty('delicious', $deliciousMock);
+
+  $posts = $model-&gt;getPosts();
+  $this-&gt;assertEquals($posts, $mockPosts);
+}
+</code></pre>
+
+<p>
+Of course this would mean that we're not launching any requests to our services at all, but instead check that models are doing the right method calls to the service API object, and get the right data back.
+</p>
+
+<h2>Validate service requests</h2>
+
+<p>
+Generally speaking, models that are using web services will transform method calls into HTTP requests against web service end points. Those might come in a variety of flavours, but all together we can say that, if we can intercept the request, we can make sure the model serializes method calls correctly into known request data.
+</p>
+
+<h3>Test adapter for Zend_HTTP calls</h3>
+
+<p>If our model uses Zend_Http to launch the API calls, we might provide a hook in the model so that we can swap the HTTP adapter for the <a href="http://framework.zend.com/manual/en/zend.http.client.adapters.html#zend.http.client.adapters.test">test adapter</a> that ships with Zend Framework. We then have access to the entire request that the model launched, which we can use for assertions:</p>
+
+<pre><code>
+public function testJsonCall() {
+  $adapter = new Zend_Http_Client_Adapter_Test();
+
+  $response = "";
+  $response .= "HTTP/1.1 200 OK" . "\r\n";
+  $response .= "Content-type: application/json" . "\r\n";
+  $response .= "\r\n";
+  $response .= '{}';
+
+  $adapter-&gt;setResponse($response);
+
+  $model = new JsonModel();
+  $model-&gt;setAdapter($this-&gt;adapter);
+
+  $request_raw = $model-&gt;http_client-&gt;getLastRequest();
+  // do your assertions here
+}
+</code></pre>
+
+<h3>Swap the endpoint</h3>
+
+<p>
+Instead of changing the adapter to intercept the call, we could swap the endpoint of the web service against a mock service. This endpoint then can respond with known data which we can use for our assertions.
+</p>
+
+<p>Depending on what kind of web services we have to mock, we might use the servers provided by Zend, e.g. <a href="http://framework.zend.com/manual/en/zend.rest.server.html">Zend_Rest_Server</a> or <a href="http://framework.zend.com/manual/en/zend.soap.html#zend.soap.server">Zend_Soap_Server</a>.
+</p>
+
+<h2>A better understanding</h2>
+
+<p>Looking at the two strategies above, it still might seem to be a hassle to do, what is essentially a replication of the web service functionality with test data, whether that happens as mock object, on the request/response level, or as test endpoint.</p>
+
+<p>But instead, this exercise is a very <em>valuable documentation of ones understanding of the service functionality</em> at a particular point in time. Given that service APIs are often in a constant state of change, things might break in the future, but the tests we've written can help us understand whether it's down to our own code or the web service instead. If things fail at the web service level, we can now refer to our tests to compare what we expect the service to do with what it actually does.</p>
+
+<h2>Related Links</h2>
+
+<ul>
+<li><a href="http://www.pointbeing.net/weblog/2009/04/unit-testing-code-which-consumes-soap-services.html">Unit Testing Code which Consumes SOAP Services</a></li>
+<li><a href="http://www.soapui.org/gettingstarted/mocking.html">Mocking with SoapUI</a></li>
+<li><a href="http://www.codeguru.com/columns/vb/article.php/c15209">Unit Testing with Stubs or Mocks</a></li>
+</ul>

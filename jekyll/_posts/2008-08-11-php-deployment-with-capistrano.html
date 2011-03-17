@@ -1,0 +1,25 @@
+---
+layout : post
+permalink : /content/php-deployment-with-capistrano/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "PHP Deployment With Capistrano"
+date : "2008-08-11 08:33:27"
+dateformatted : "August 11 2008, 08:33"
+excerpt : |
+    <p>Giving my PHP Projects the Capistrano twist offers another safety net for errors. But is it worth going through the effort of setting all this up?</p>
+categories : 
+   - August 2008
+   - "Matthias Willerich"
+---
+
+	<p>Today I&#8217;d like to share 2 links with you that have helped me quite a bit recently.<br />
+I finally found the time at work to move a couple of further-ran projects from the initial &#8220;building it&#8221; stage to &#8220;maintaining it&#8221;. Using this opportunity I followed <a href="http://www.simplisticcomplexity.com/2006/08/16/automated-php-deployment-with-capistrano/">Jon Maddox&#8217; post</a> about utilizing my installed (and older) version of <a href="http://www.capify.org/">Capistrano</a> to get more control over deploying PHP projects. As most of them are Wordpress installations, this Made By Many post about <a href="http://www.madebymany.co.uk/using-capistrano-with-php-specifically-wordpress-0087">Capistrano and Wordpress</a> was also of good use.</p>
+
+	<p>The biggest criticism I come across when mentioning this is &#8220;why bother with this when I can use shell scripts&#8221;, referring to scp, ssh, rsync, and all the rest. I find <a href="http://www.simplisticcomplexity.com/2006/08/16/automated-php-deployment-with-capistrano/#comment-10668">this is a valid point</a>, and except for the &#8220;maybe I can&#8217;t be bothered writing a shell script containing all that&#8221; argument, I&#8217;m clueless. Is it simply the collection of all this functionality and presenting it in an apparently easy way? Maybe someone can enlighten me here or over on the other side?</p>
+
+	<p>For me, I just like to have the good feeling that, after configuring it, I can do my changes locally, test them, check in the changes once I&#8217;m happy, hit &#8220;cap deploy&#8221; and go for lunch/dinner/over to more exciting things in life than uploading files. And if I really screw up (because I secretly make sure it&#8217;s fine live as well, and it&#8217;s not), i can simply roll back. <br />
+With a little scripting magic wrapped into the configuration I can sync databases and files back and forth (yeah, yeah, why not do this in the console to start with?). And, paths amended for a different machine (if necessary), it&#8217;s portable, too. </p>
+
+
+ 

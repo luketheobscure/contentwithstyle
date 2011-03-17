@@ -1,0 +1,36 @@
+---
+layout : post
+permalink : /content/cws-blog-posts-now-twitter/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "CwS blog posts now on twitter"
+date : "2009-01-29 08:00:19"
+dateformatted : "January 29 2009, 08:00"
+excerpt : |
+    <p>Posts from our blog will now automatically pop up on <a href="https://twitter.com/contentwstyle">Twitter</a>.</p>
+    
+categories : 
+   - January 2009
+   - "Pascal Opitz"
+---
+
+<p>Posts from our blog will now automatically pop up on <a href="https://twitter.com/contentwstyle">Twitter</a>.</p>
+
+<p>This is only a couple of lines of code, thanks to the <a href="http://framework.zend.com/manual/en/zend.service.twitter.html">API wrapper</a> that Zend Framework now offers, but also thanks to the <a href="http://www.scripting.com/stories/2007/06/27/tinyurlHasAnApi.html">TinyURL API</a>:</p>
+
+<pre><code>
+// TinyURL for the blog post
+$client = new Zend_Http_Client($config-&gt;tinyurl-&gt;endpoint);
+$client-&gt;setParameterGet('url', $url);
+$response = $client-&gt;request('GET');
+$tiny_url_response = $response-&gt;getBody();
+
+// TinyURL into the message
+$message = $message . ' ' . $tiny_url_response;
+
+// Twitter
+$twitter = new Zend_Service_Twitter($config-&gt;twitter-&gt;user, $config-&gt;twitter-&gt;password);        
+$twitter-&gt;status-&gt;update($message);
+</code></pre>
+
+<p>So feel free to follow us, even though twittering to <strong>ME</strong> only makes sense if it happens automatically, as I personally am no big fan of messages like "I am going outside now" or anything like that.</p>

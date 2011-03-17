@@ -1,0 +1,36 @@
+---
+layout : post
+permalink : /content/be-box-cli-security-issues/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Be Box CLI and security issues"
+date : "2008-11-15 18:43:04"
+dateformatted : "November 15 2008, 18:43"
+excerpt : |
+    <p>An interesting insight into the Be Box, and how much functionality is lurking behind the simple face <a href="http://rory.allford.net/2007/03/30/bebox-got-root/">is what I found here</a>,
+    stating that the box is a dressed down version of a Speedtouch 780WL,
+    and therefore much more capable than the web interface suggests.</p>
+categories : 
+   - November 2008
+   - "Pascal Opitz"
+---
+
+<p>An interesting insight into the Be Box, and how much functionality is lurking behind the simple face <a href="http://rory.allford.net/2007/03/30/bebox-got-root/">is what I found here</a>,
+stating that the box is a dressed down version of a Speedtouch 780WL,
+and therefore much more capable than the web interface suggests.</p>
+
+<p>This made me curious, and I did a google search on the topic, and I found a <a href="http://www.beforum.co.uk/showthread.php?t=6667">variety of CLI commands and some good explanations on the adsl2forum</a>. Finally I took a look into the <a href="http://rory.allford.net/wp-content/uploads/2007/03/st-780wl_cli.pdf">CLI reference for the 780WL</a>, which the Be Box is based on. This does reveal the whole complexity of the commands that the little box offers.</p>
+
+<p>So far so good. But careful readers of above links will also discover that there are a couple of weird security issues which are hidden in the default settings of the router. The services ftp, https and telnet are exposed to the WAN by default, and on top of that there are some users stored in the settings, which are not visible through the web interface:</p>
+
+<pre><code>
+_{Administrator}=&gt;user list
+User    Flags Role    
+----    ----- ----    
+Administrator   U Administrator   
+tech    R TechnicalSupport   
+BeTech     TechnicalSupport </code></pre>
+
+<p>The suspicion that <em>tech</em> and <em>BeTech</em> always have the same password, so the Be guys can telnet into your router quietly, might not be to far off? This means that the door is open to an easy attack for everyone.</p>
+
+<p>To anyone who's using the BeBox, I recommend to remove those users, change the Administrator password and, if not needed, disable the telnet, ftp and https services for the WAN. The easiest way to do this is exporting the settings to an ini file, edit them and then re-import them.</p>

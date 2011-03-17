@@ -1,0 +1,34 @@
+---
+layout : post
+permalink : /content/get-parameters-and-caching/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "GET parameters and caching"
+date : "2009-01-07 16:55:27"
+dateformatted : "January 7 2009, 16:55"
+excerpt : |
+    <p>
+    Once you do care about caching and set expiry headers for static files in the far future, you'll have to make sure that crucial new functionality is not pulled from the cache. But a GET parameter is NOT the way to do this ....
+    </p>
+categories : 
+   - January 2009
+   - "Pascal Opitz"
+---
+
+<p>
+Once you do care about caching and set expiry headers for static files in the far future, you'll have to make sure that crucial new functionality is not pulled from the cache. But a GET parameter is NOT the way to do this ....
+</p>
+
+<p>
+Have a look into the <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.9">HTTP protocol 1.1 specs about caching</a>, and it becomes obvious why:
+</p>
+
+<blockquote>
+<p>
+We note one exception to this rule: since some applications have traditionally used GETs and HEADs with query URLs (those containing a "?" in the rel_path part) to perform operations with significant side effects, caches MUST NOT treat responses to such URIs as fresh unless the server provides an explicit expiration time. This specifically means that responses from HTTP/1.0 servers for such URIs SHOULD NOT be taken from a cache.
+</p>
+</blockquote>
+
+<p>
+<a href="http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/">People have tested this</a>, and the bottom line is that you should change the filename instead. Interestingly (I didn't verify this, btw.) <a href="http://stackoverflow.com/questions/131061/do-fancy-mvc-urls-affect-how-caching-is-done#133160">it seems that Firefox and IE just ignore this part of the spec sometimes, while Safari does it the right way</a>.
+</p>

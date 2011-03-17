@@ -1,0 +1,61 @@
+---
+layout : post
+permalink : /content/php-script-timeshift-in-subtitle-files/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "PHP Script: Timeshift in Subtitle Files"
+date : "2006-09-16 10:30:58"
+dateformatted : "September 16 2006, 10:30"
+excerpt : |
+    <p>Have you ever tried to watch a movie with a .srt file, and the subtitle was more or less out of time? You can use this little PHP script through commandline and fix it by providing an offset.</p>
+categories : 
+   - September 2006
+   - "Pascal Opitz"
+---
+
+<p>
+Have you ever tried to watch a movie with a .srt file, and the subtitle was more or less out of time? You can use this little PHP script through commandline and fix it by providing an offset.
+</p>
+
+<p>
+This obviously is just a quick script, nothing fancy, but i thought I might still share it. Save the file as &#8220;subtitle_timeshift.php&#8221; and execute it with PHP in the commandline. It will then save your file with the prefix &#8220;parse_&#8221; so you can check if it works or not.
+<br />
+<br />
+Enjoy!
+</p>
+
+<pre><code>
+&lt;?
+if(empty($argv[1]) || empty($argv[2]))
+  die('Syntax: php subtitle_timeshift.php filename seconds'. "n");
+
+if(!file_exists($argv[1]))
+  die('file not found' . "n");
+
+$fc=file($argv[1]);
+$f = fopen('parse_' . $argv[1], 'w+');
+
+foreach($fc as $ln)
+{
+  if(strpos($ln, ' --> ') !== false)
+  {
+    $parts = explode(' --> ', $ln);
+    $start = substr($parts[0], 0, 8);
+    $end = substr($parts[1], 0, 8);
+    
+    $start = strtotime("2000-01-01 " . $start) + intval($argv[2]);
+    $end = strtotime("2000-01-01 " . $end) + intval($argv[2]);
+
+    $start = date("H:i:s", $start) . substr($parts[0], 8);
+    $end = date("H:i:s", $end) . substr($parts[1], 8);
+    
+    $ln = $start . ' --> ' . $end;
+  }
+  
+  fputs($f, $ln);
+}
+
+fclose($f);
+
+?&gt;
+</code></pre>

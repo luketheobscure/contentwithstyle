@@ -1,0 +1,83 @@
+---
+layout : post
+permalink : /content/linkedin-and-zendoauth/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Linkedin and Zend_Oauth"
+date : "2010-05-05 17:43:49"
+dateformatted : "May 5 2010, 17:43"
+excerpt : |
+    <p>Matthias has made look into Linkedin and OAuth for a bit. <a href="http://www.formatix.eu/en/update-linkedin-status-using-zend-oauth.html">This example</a> was a very interesting read, but I think it's overcomplicating things slightly. That's why I want to show a very simple example inspired by what we've done for the brand new CwS Author pages.</p>
+categories : 
+   - May 2010
+   - "Pascal Opitz"
+---
+
+<p>Matthias has made look into Linkedin and OAuth for a bit. <a href="http://www.formatix.eu/en/update-linkedin-status-using-zend-oauth.html">This example</a> was a very interesting read, but I think it's overcomplicating things slightly. That's why I want to show a very simple example inspired by what we've done for the brand new CwS Author pages.</p>
+
+<p>Before we get started, some good news: No more bugs in Zend_Oauth. Hence all that hacking of the ZF code is now obsolete as well.</p>
+
+<p>Also the example contained a couple of silly things that just confused me: The use of $_SESSION for example, or the fact that with ZF 1.10 the parameter was called 'userAuthori<strong>z</strong>ationUrl' rather than 'userAuthori<strong>s</strong>ationUrl'.</p>
+
+<h2>My simple example</h2>
+
+<p>I am assuming that we're using a controller for the user, and here's an action called linkedin for it:</p>
+
+<pre><code>public function linkedinAction() {
+  $user_id = $this->loginHelper->userId();
+  $ns = new Zend_Session_Namespace('linkedin_oauth');
+
+  $options = array(
+    'localUrl' => 'http://site/user/linkedin/',
+    'callbackUrl' => 'http://site/user/linkedin/',
+    'requestTokenUrl' => 'https://api.linkedin.com/uas/oauth/requestToken',
+    'userAuthorizationUrl' => 'https://api.linkedin.com/uas/oauth/authorize',
+    'accessTokenUrl' => 'https://api.linkedin.com/uas/oauth/accessToken',
+    'consumerKey' => $this->config->linkedin->key,
+    'consumerSecret' => $this->config->linkedin->secret,
+  );
+
+  $consumer = new Zend_Oauth_Consumer($options);
+
+  if(empty($ns->request_token)) {
+    // get request token and redirect to linkedin
+    $token = $consumer->getRequestToken();
+    $ns->request_token = serialize($token);
+    $consumer->redirect();
+    die();
+  } else {
+    try {
+      // get access token and store in DB
+      $token = $consumer->getAccessToken($_GET, unserialize($ns->request_token));
+      $this->userModel->setLinkedinToken($author_id, serialize($token));
+    } catch(Exception $e) {
+      // reset token in DB and empty session if there was a fault
+      $this->userModel->setLinkedinToken($author_id, '');
+      $ns->request_token = '';
+    }
+  }
+
+  // redirect user to own details page
+  return $this->_redirect('/user/details/');
+}
+</code></pre>
+
+<p>As you can see you'll need the infrastructure to obtain the user id and store the token in the DB, but otherwise this is pretty straight forward. We're saving the request_token in a session to then obtain the access_token when linkedin redirects us to the same page.</p>
+
+<p>Assuming that you then have managed to read the token from the database, this is what you need to get the users current status:</p>
+
+<pre><code>$options = array(
+  'consumerKey' =&gt; $this-&gt;config-&gt;linkedin-&gt;key,
+  'consumerSecret' =&gt; $this-&gt;config-&gt;linkedin-&gt;secret,
+);
+
+$token = unserialize($token);
+$client = $token-&gt;getHttpClient($options);
+
+$client-&gt;setUri('https://api.linkedin.com/v1/people/~:(current-status)');
+$client-&gt;setMethod(Zend_Http_Client::GET);
+$response = $client-&gt;request();
+$content = $response-&gt;getBody();
+</code></pre>
+
+<p>And that's it really. For more details read the great original articles <a href="http://www.formatix.eu/en/php-linkedin-api-zend-oauth.html">here</a> and <a href="http://jeroenbourgois.be/blog/2010/03/21/linkedin-using-zend-oauth/">here</a>.</p>

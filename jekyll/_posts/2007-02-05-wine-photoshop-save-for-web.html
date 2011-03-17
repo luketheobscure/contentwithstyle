@@ -1,0 +1,31 @@
+---
+layout : post
+permalink : /content/wine-photoshop-save-for-web/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Wine, Photoshop &#38; &quot;save for web&quot;"
+date : "2007-02-05 08:25:25"
+dateformatted : "February 5 2007, 08:25"
+excerpt : |
+    <p><a href="http://www.redwiredesign.com/profile/tom_westcott.html">Tom</a> did find out about this one for me:
+    The trick is to execute Photoshop with quotes around the path and backslashes in it.</p>
+categories : 
+   - February 2007
+   - "Pascal Opitz"
+---
+
+	<p><a href="http://www.redwiredesign.com/profile/tom_westcott.html">Tom</a> did find out about this one for me:<br />
+The trick is to execute Photoshop with quotes around the path and backslashes in it.</p>
+
+	<p>Via <a href="http://www.winehq.org/pipermail/wine-bugs/2006-June/032059.html">winehq</a></p>
+
+<pre>
+Save for Web works with:
+wine "c:\program files\adobe\Photoshop 7.0\Photoshop.exe"
+
+Save for Web WILL NOT work with:
+wine "c:/program files/adobe/Photoshop 7.0/Photoshop.exe"
+</pre>
+
+
+ 

@@ -1,0 +1,25 @@
+---
+layout : post
+permalink : /content/ie-conditional-comments-in-xsl/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "IE Conditional comments in XSL"
+date : "2006-09-27 05:49:41"
+dateformatted : "September 27 2006, 05:49"
+excerpt : |
+    <p>Just a small bit of  code, but not obious at first glance &hellip;</p>
+categories : 
+   - September 2006
+   - "Pascal Opitz"
+---
+
+	<p>Just a small bit of  code, but not obious at first glance &#8230;</p>
+
+<pre><code>
+&lt;xsl:comment&gt;&lt;![CDATA[[if gte IE 6]&gt;
+  &lt;link rel="stylesheet" type="text/css" media="screen" href="ie.css" /&gt;
+&lt;![endif]]]&gt;&lt;/xsl:comment&gt;
+</code></pre>
+
+
+ 

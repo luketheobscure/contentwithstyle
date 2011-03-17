@@ -24,11 +24,10 @@
             </div>
             
             <div class="sidebar">
+                {% include info.html %}
+                {% include feed.html %}
                 {% if page.archive %}
-                <div class="box date">
-                    <h2>Browse by Date</h2>
-                    {% archive_by_date %}
-                </div>
+                    {% include archive_by_date.html %}
                 {% endif %}
             </div>
         </div>

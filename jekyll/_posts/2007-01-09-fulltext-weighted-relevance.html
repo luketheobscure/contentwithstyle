@@ -1,0 +1,40 @@
+---
+layout : post
+permalink : /content/fulltext-weighted-relevance/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "fulltext &#38; weighted relevance"
+date : "2007-01-09 09:14:37"
+dateformatted : "January 9 2007, 09:14"
+excerpt : |
+    <p>Via JV Multimedia</p>
+categories : 
+   - January 2007
+   - "Pascal Opitz"
+---
+
+	<p>Via JV Multimedia:</p>
+
+	<p>A quick and neat way to use MySQL fulltext search with weighted relevance modificators.</p>
+
+<pre><code>
+
+SELECT
+*,
+(MATCH (category) AGAINST ('$query' IN BOOLEAN MODE)*100) +
+(MATCH (title) AGAINST ('$query' IN BOOLEAN MODE)*10) +
+MATCH (body) AGAINST ('$query' IN BOOLEAN MODE) AS rating
+FROM
+stories
+WHERE
+MATCH (title,category,body) AGAINST ('$query' IN BOOLEAN MODE)
+ORDER BY
+rating DESC
+LIMIT 0,10
+
+</code></pre>
+
+	<p><a href="http://www.jvmultimedia.com/portal/node/61">http://www.jvmultimedia.com/portal/node/61</a></p>
+
+
+ 

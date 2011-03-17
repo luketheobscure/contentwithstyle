@@ -1,0 +1,29 @@
+---
+layout : post
+permalink : /content/firefox-3-keeps-logging-me-out-not-any-more-its-not/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "Firefox 3 keeps logging me out. Not any more it's not."
+date : "2008-09-01 09:51:33"
+dateformatted : "September 1 2008, 09:51"
+excerpt : |
+    <p>Have you had cookie trouble since upgrading Firefox? This post might solve your woes.</p>
+categories : 
+   - September 2008
+   - "Matthias Willerich"
+---
+
+	<p>Like many others I&#8217;ve been enjoying Firefox 2&#8217;s ongoing session functionality that had me logged in on frequently used sites. This recently changed with the Firefox 3 upgrade. All of a sudden Basecamp and some other random sites kept asking for my login. </p>
+
+	<p>At first I thought that maybe Basecamp changed policies, or that some rolled out code went wrong. That went until last Friday, when I stopped ignoring the &#8220;remember me&#8221; checkbox, which also failed and an old client of mine contacted me and stated the same problem for a website I built for them ages ago. Now, when other people&#8217;s code breaks, that&#8217;s one thing, but of course I couldn&#8217;t let it lie if it&#8217;s my stuff, legacy or not.</p>
+
+	<p>Today I got around researching the problem and found this <a href="http://forums.mozillazine.org/viewtopic.php?p=3561225#p3561225">all-explaining forum post on mozillazine</a> . Seems that some people&#8217;s upgrade has corrupted the cookies database, which moved from cookies.txt to cookies.sqlite, with varying and downright weird consequences, like the guy who seemed to be able to log into 10 sites, and the 11th killed them all.</p>
+
+	<p>Some of the suggested solutions involve safe-mode and digging through add-ons (as some apparently trigger said safe-mode or break other functionality), others claim it has something to do with the way you quit firefox, but mine was as simple as this:</p>
+
+	<p><cite>I shut down my browser and deleted both my cookies.txt and cookies.sqllite files, then restarted the browser. Worked like a charm. Apparently the files had gotten corrupted somehow, and session information was not being saved correctly. It took a complete purge to start again from scratch.</cite></p>
+
+	<p>That&#8217;s all, and not a grey hair in sight. </p>
+
+
+ 

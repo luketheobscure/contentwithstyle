@@ -1,0 +1,134 @@
+---
+layout : post
+permalink : /content/quick-helper-script-for-zf-view-translations--/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Quick helper script for ZF view translations  "
+date : "2009-10-29 10:34:01"
+dateformatted : "October 29 2009, 10:34"
+excerpt : |
+    <p>Manual copy and paste jobs are a pain. Faced with the prospect of internationalizing 30+ big view files, I thought there had to be a better way. When I started to use the reg exp search facility in Textmate, the penny dropped. A helper script is what was needed.</p>
+categories : 
+   - October 2009
+   - "Pascal Opitz"
+---
+
+<p>Manual copy and paste jobs are a pain. Faced with the prospect of internationalizing 30+ big view files, I thought there had to be a better way. When I started to use the reg exp search facility in Textmate, the penny dropped. A helper script is what was needed.</p>
+
+<h2>PHP cli script 'internationalize.php'</h2>
+
+<pre><code>
+&lt;?php
+// check for CLI
+if (php_sapi_name() != "cli") {
+  print "This script is written to run under the command line ('cli') version of\n";
+  print "the PHP interpreter, but you're using the '".php_sapi_name()."' version\n";
+  exit(1);
+}
+
+// check for valid syntax
+if(empty($argv[1])) {
+  die('syntax: php internationalize.php &lt;file&gt; &lt;optional token prefix&gt;');
+}
+
+
+function get_key($str, $prefix) {
+  $key = str_replace(' ', '_', strtolower($str));
+  $key = preg_replace('/[\\:\\.\\,\\!\\?]{0,}/', '', $key);
+  $prefix = $GLOBALS['prefix'];
+  return $prefix.$key;
+}
+
+function key_replace($matches) {
+  if(trim($matches[2]) != "") {
+    $key = get_key($matches[2]);
+    return '&lt;'.$matches[1].'&gt;&lt;?php echo $this-&gt;translate-&gt;_("'.$key.'"); ?&gt;&lt;/'.$matches[3].'&gt;';
+  } else {
+    return $matches[0];
+  }
+}
+
+
+// get a prefix for the tokens
+$prefix = (!empty($argv[2])) ? $argv[2] . '_' : '';
+
+// identify and load file
+$file = realpath($argv[1]);
+$contents = file_get_contents($file);
+
+// create backup file
+copy($file, $file.'.bak');
+
+// reg exp to find all text in between tags
+$pattern = '/&lt;([\\w \\=\\%\\"\\(\\)\\\'\\:]+)&gt;([\\w\\s\\:\\.\\,\\!\\?_-]+)&lt;\\/([\\w]+)&gt;/';
+
+// replace with translation calls
+$translated = preg_replace_callback($pattern, 'key_replace', $contents);
+file_put_contents($file, $translated);
+
+
+// start generate ini file
+$rows = array();
+$matches = array();
+preg_match_all($pattern, $contents, $matches);
+
+for($i=0; $i&lt;count($matches[1]); $i++) {
+  if(trim($matches[2][$i]) != "") {
+    $key = get_key($matches[2][$i]);
+    $rows[] = $key.'="'.addslashes($matches[2][$i]).'"';
+  }
+}
+
+$ini_string = implode("\n", $rows);
+file_put_contents($file.'.translation.ini', $ini_string);
+</code></pre>
+
+<h2>Example view file 'test.phtml'</h2>
+
+<pre><code>
+&lt;p&gt;Fooo&lt;/p&gt;
+
+&lt;blockquote style="test"&gt;Ich teste gerade&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Test list&lt;/li&gt;
+  &lt;li&gt;Test list  2&lt;/li&gt;
+&lt;/ul&gt;                                                                        
+</code></pre>
+
+<h2>Translate it!</h2>
+
+<p>Now we're set. We just need to call:</p>
+
+<pre><code>
+php internationalize.php test.phtml
+</code></pre>
+
+<p>We end up with a this in test.phtml:</p>
+
+<pre><code>
+&lt;p&gt;&lt;?php echo $this-&gt;translate-&gt;_("fooo"); ?&gt;&lt;/p&gt;
+
+&lt;blockquote style="test"&gt;&lt;?php echo $this-&gt;translate-&gt;_("ich_teste_gerade"); ?&gt;&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;?php echo $this-&gt;translate-&gt;_("test_list"); ?&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;?php echo $this-&gt;translate-&gt;_("test_list__2"); ?&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre>
+
+<p>and this in test.phtml.translation.ini:</p>
+
+<pre><code>
+fooo="Fooo"
+ich_teste_gerade="Ich teste gerade"
+test_list="Test list"
+test_list__2="Test list  2"
+</code></pre>
+
+<h2>In progress</h2>
+
+<p>This is not meant as THE solution. It's merely a quick script I put together in a couple of minutes. There are a couple of things that it can't do, like translating attributes and all that.
+</p>
+
+<p>I'm no reg exp guru, and if you can improve please feel free to comment. Otherwise, have fun.</p>

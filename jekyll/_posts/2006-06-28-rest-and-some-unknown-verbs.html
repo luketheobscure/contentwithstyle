@@ -1,0 +1,32 @@
+---
+layout : post
+permalink : /content/rest-and-some-unknown-verbs/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "REST and some unknown verbs"
+date : "2006-06-28 06:27:21"
+dateformatted : "June 28 2006, 06:27"
+excerpt : |
+    <p>Doing a little research on REST I came accross a couple of interesting reads and discovered the lost verb in the HTTP language &hellip;</p>
+categories : 
+   - June 2006
+   - "Pascal Opitz"
+---
+
+	<p>I started off with a little <a href="http://www.google.co.uk/search?q=REST+urls&#38;hl=en&#38;hs=BW1&#38;lr=&#38;client=firefox-a&#38;rls=org.mozilla:en-US:official&#38;start=10&#38;sa=N">google search</a> and had a read about <a href="http://www.xfront.com/REST-Web-Services.html">Building Web Services the REST Way</a> which made clear to me that you could POST something to its already given URL as a natural way of updating ressources.</p>
+
+	<p>A bit further down the list there was a very interesting article called <a href="http://naeblis.cx/rtomayko/2004/12/12/rest-to-my-wife">How I explained REST to my wife&#8230;</a> that initially came across a bit stupid, but then in the end flagged up some very true points about the benefits that HTTP and REST has, mentioning GET, POST and PUT &#8230; </p>
+
+	<p>Hang on, PUT? What the heck is that? Yet another google search and I knew a bit more:</p>
+
+	<blockquote cite="http://www.apacheweek.com/features/put"><p>The &#8220;PUT&#8221; method is similar to the POST method in that it can cause information to be updated on the server. The difference is that the POST method is normally handed a script which is explicitly named by the resource (that is, something that already exists), while a PUT request could be directed at a resource which does not (yet) exist. Another difference is that the POST method can be used in response to a form, while the PUT method can only contain a single data item. The PUT method is suited for publishing pages.</p></blockquote>
+
+	<p>Seems like I discovered a verb that was unknown to me up to this point. Same was DELETE as http method mentioned in this article.<br />
+Time to look up the whole family I thought, and <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">according to the w3c</a> you have even more methods.<br />
+Also there is a <a href="http://perso.ec-lyon.fr/lyonel.vincent/apache/mod_put.html">mod_put</a> for apache utilizing the PUT and DELETE method.</p>
+
+	<p>Amazingly I never came accross them, and that is in 5 years+ of proramming web applications. Am I the only guy missing out on these basic HTTP definitions?</p>
+
+
+
+ 

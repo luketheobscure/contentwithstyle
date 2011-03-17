@@ -1,0 +1,24 @@
+---
+layout : post
+permalink : /content/quick-lint-check-on-changed-php-files-with-svn-st-and-xargs/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Quick lint check on changed php files with svn st and xargs"
+date : "2009-10-20 10:12:05"
+dateformatted : "October 20 2009, 10:12"
+excerpt : |
+    <p>If you haven't done it in a hook already, here's the quick way to check all your changed files for syntax errors.</p>
+categories : 
+   - October 2009
+   - "Pascal Opitz"
+---
+
+<p>If you haven't done it in a <a href="http://blueparabola.com/blog/subversion-commit-hooks-php">hook</a> already, here's the quick way to check all your changed files for syntax errors:</p>
+
+<pre><code>
+svn st | grep .php | grep M | cut -c 8- | xargs -n1 php -l
+</code></pre>
+
+<p>
+I use xargs quite a lot lately, but some good clues came from David Singletons post "<a href="http://dsingleton.co.uk/blog/using-xargs-bash-example">Using xargs like you mean it</a>".
+</p>

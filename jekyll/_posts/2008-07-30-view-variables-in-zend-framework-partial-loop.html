@@ -1,0 +1,65 @@
+---
+layout : post
+permalink : /content/view-variables-in-zend-framework-partial-loop/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "View variables in Zend Framework Partial Loop"
+date : "2008-07-30 10:58:50"
+dateformatted : "July 30 2008, 10:58"
+excerpt : |
+    <p>One of the fun things about Zend Framework is the possibility to extend the Framework classes with extras functionality.
+    I got slightly annoyed that in a partialLoop I couldn&#8217;t access the view variables. here&#8217;s how I fixed it.</p>
+categories : 
+   - July 2008
+   - "Pascal Opitz"
+---
+
+	<p>One of the fun things about Zend Framework is the possibility to extend the Framework classes with extras functionality.<br />
+I got slightly annoyed that in a partialLoop I couldn&#8217;t access the view variables. here&#8217;s how I fixed it.</p>
+
+	<p>First of all we need to understand that the Helpers get overwritten, if we declare custom ones with the same name.</p>
+
+	<p>Therefore, if I create a helper class partialLoop and load it via declaring a helper path, it will overwrite the Zend Framework one.</p>
+
+	<p>In my case I just added this into the init function of the Base Controller:</p>
+
+<pre><code>
+public function init() {
+	$this->view->addHelperPath('/path/', 'Extended_Helper');
+}
+</code></pre>
+
+	<p>Within the declared path I now have to add a file called PartialLoop.php</p>
+
+<pre><code>
+&lt;?php
+
+require_once 'Zend/View/Helper/PartialLoop.php';
+
+class Extended_Helper_PartialLoop extends Zend_View_Helper_PartialLoop {
+
+	public $view;
+	
+	public function setView($view) {		
+		$this->view = $view;
+		$this->config = Zend_Registry::get('config');
+	}
+
+	public function partialLoop($path, $array) {
+		return parent::partialLoop($path, $array);
+	}
+	
+	
+	public function partial($name, $module, $item) {
+		$item['view'] = $this->view;
+		$item['config'] = $this->config;
+		return parent::partial($name, $module, $item);
+	}
+}
+					
+</code></pre>
+
+	<p>And voila, we now can access the view from within a partialLoop.</p>
+
+
+ 

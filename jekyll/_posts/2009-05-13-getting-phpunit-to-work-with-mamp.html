@@ -1,0 +1,29 @@
+---
+layout : post
+permalink : /content/getting-phpunit-to-work-with-mamp/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Getting phpunit to work with MAMP"
+date : "2009-05-13 12:41:46"
+dateformatted : "May 13 2009, 12:41"
+excerpt : |
+    <p>In order to run my unit tests, I needed to get phpunit running with MAMP. Thanks to the <a href="http://mark-kirby.co.uk/2009/installing-phpunit-with-mamp/">helpful post of Mark Kirby</a> on this, I figured it out.</p>
+categories : 
+   - May 2009
+   - "Pascal Opitz"
+---
+
+<p>In order to run my unit tests, I needed to get phpunit running with MAMP. Thanks to the <a href="http://mark-kirby.co.uk/2009/installing-phpunit-with-mamp/">helpful post of Mark Kirby</a> on this, I figured it out.</p>
+
+<ol>
+<li>cd into your PEAR installation directory</li>
+<li>Make backup of phpunit file in bin folder</li>
+<li>Edit the original file, replace #!/usr/bin/php with #!/Applications/MAMP/bin/php5/bin/php</li> 
+<li>3. Also remove this:
+<pre><code>
+if (strpos('/usr/bin/php', '@php_bin') === 0) {
+    set_include_path(dirname(__FILE__) . PATH_SEPARATOR . get_include_path());
+}
+</code></pre></li>
+<li>And finally, something that Mark didn't mention, add PEAR include path into /Applications/MAMP/conf/php5/php.ini</li>
+</ol>

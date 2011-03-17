@@ -1,0 +1,30 @@
+---
+layout : post
+permalink : /content/n900-and-problems-with-aim-and-icq/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "N900: AIM and ICQ account problems"
+date : "2010-04-28 11:05:41"
+dateformatted : "April 28 2010, 11:05"
+excerpt : |
+    <p>I'm a happy n900 user since a while, and one of the best features of the whole device is it's contact list and IM conversations. Annoyingly since an upgrade the AIM and ICQ accounts refused to connect and threw a network error.</p>
+    
+    <p>The solution came via <a href="http://talk.maemo.org/showpost.php?p=461439&amp;postcount=7">the maemo forums.</a></p>
+categories : 
+   - April 2010
+   - "Pascal Opitz"
+---
+
+<p>I'm a happy n900 user since a while, and one of the best features of the whole device is it's contact list and IM conversations. In fact it's about the coolest way to have all your contacts in one place, and as a mobile device for IM it's the best I've ever seen.</p>
+
+<p>Annoyingly since an upgrade the AIM and ICQ accounts refused to connect and threw a network error.</p>
+
+<p>The solution came via <a href="http://talk.maemo.org/showpost.php?p=461439&amp;postcount=7">the maemo forums.</a></p>
+
+<p>You'll have to downgrade libpurple:</p>
+
+<pre><code>
+apt-get install purple-extra-protocols=2.6.3-6nix0
+apt-get install libpurple0=2.6.3-6nix0
+</code></pre>
+

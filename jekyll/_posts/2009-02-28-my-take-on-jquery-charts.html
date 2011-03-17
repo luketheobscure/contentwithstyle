@@ -1,0 +1,25 @@
+---
+layout : post
+permalink : /content/my-take-on-jquery-charts/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "My take on jQuery charts"
+date : "2009-02-28 20:24:47"
+dateformatted : "February 28 2009, 20:24"
+excerpt : |
+    <p>A while back I did <a href="http://www.contentwithstyle.co.uk/search/canvas">a couple of posts</a> touching the subject HTML 5 and the canvas tag. Of course I have been tinkering around with chart drawing APIs and so on, and couldn't help to write a little script myself.</p>
+    
+categories : 
+   - February 2009
+   - "Pascal Opitz"
+---
+
+<p>A while back I did <a href="http://www.contentwithstyle.co.uk/search/canvas">a couple of posts</a> touching the subject HTML 5 and the canvas tag. Of course I have been tinkering around with chart drawing APIs and so on, and couldn't help to write a little script myself.</p>
+
+<p>I started out with pie charts, and essentially did a mashup between <a href="http://joncom.be/code/excanvas-piechart">Jon Combes approach</a> and <a href="http://www.mattknott.com/content/blog/2008/04/Advanced_Canvas_Based_Pie_Chart.html">Advanced Canvas Based Pie Chart by Matthew Knott</a>, then wrapped a JQuery plugin around it.</p>
+
+<p>Later I added some sidebar charts, which were much simpler to do and don't require to understand the fact that javascript does trigonometric functions in radians rather than degrees, a fact that made my brain boil when I tried to add in the labels, because I was expecting different numbers to come back from my calculations ...</p>
+
+<p>I was keen on passing the chart values in as array, so I could gather data from an HTML table with a couple of lines of JS, for example. I left this out in <a href="http://www.contentwithstyle.co.uk/resources/jquery_canvascharts_demo/index.html">the little demo that I mocked up</a>, which I uploaded <a href="http://www.contentwithstyle.co.uk/resources/jquery_canvascharts_demo.zip">as a zip file</a> as well, but I am sure you guys figure what I mean.</p>
+
+<p>The whole thing is nothing new, and <a href="http://www.liquidx.net/plotkit/">Plotkit</a> or <a href="http://bluff.jcoglan.com">Bluff</a> are way more advanced, but I think it's a nice little demo to read and understand, without being overwhelmed by large files of code. So I hope you enjoy it.</p>

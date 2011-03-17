@@ -1,0 +1,121 @@
+---
+layout : post
+permalink : /content/shell-script-for-adding-virtual-hosts-in-leopard/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Shell script for adding virtual hosts in Leopard"
+date : "2009-02-08 08:22:59"
+dateformatted : "February 8 2009, 08:22"
+excerpt : |
+    <p>I was getting annoyed with constantly editing config files myself. That's why I hacked together a shell script to add the vhosts for me.</p>
+categories : 
+   - February 2009
+   - "Pascal Opitz"
+---
+
+<p>I was getting annoyed with constantly editing config files myself. That's why I hacked together a shell script to add the vhosts for me.</p>
+
+<h2>Prerequisites</h2>
+
+<p>
+Open the Terminal and execute the following commands:
+</p>
+
+<pre><code>
+sudo sed -i -e s@^#Include\ /private/etc/apache2/extra/httpd-vhosts.conf@Include\ /private/etc/apache2/extra/httpd-vhosts.conf@ /private/etc/apache2/httpd.conf
+</code></pre>
+
+<p>
+This will enable the vhost include file to be read from the httpd conf.
+</p>
+
+<pre><code>
+sudo sed -i -e s/^\&lt;/#\&lt;/ /private/etc/apache2/extra/httpd-vhosts.conf
+sudo sed -i -e s/^\ /#\ / /private/etc/apache2/extra/httpd-vhosts.conf
+sudo sed -i -e s/^#NameVirtualHost/NameVirtualHost/ /private/etc/apache2/extra/httpd-vhosts.conf
+</code></pre>
+
+<p>
+This will enable the Virtualhosts in apache.
+<br />
+Now let's enable PHP as well:
+</p>
+
+<pre><code>
+sudo sed -i -e s@^#LoadModule\ php5_module@LoadModule\ php5_module@ /private/etc/apache2/httpd.conf
+</code></pre>
+
+<p>
+All we need to do is restart apache:
+</p>
+
+<pre><code>
+sudo apachectl restart
+</code></pre>
+
+<h2>Adding a vhost</h2>
+
+<p>
+Now we're all set, and can create the shell script in some location of your choice. In the example below it's assumed that it is called add.sh.
+</p>
+
+<p>The shell script itself:</p>
+
+<pre><code>
+#!/bin/sh
+#
+# Script to validate files in directory
+#
+add_host_entry() {
+	echo "127.0.0.1	$1" &gt;&gt; /etc/hosts
+}
+
+add_vhost_conf() {
+	cat localvhost.tpl | sed "s/{VHOSTNAME}/$1/" | sed "s@{VHOSTDIRECTORY}@$2@" &gt;&gt; /private/etc/apache2/extra/httpd-vhosts.conf
+}
+
+if [ $# -lt 2 ]; then
+	echo "syntax: sh add.sh vhostname vhostdir"
+	exit
+fi
+
+add_host_entry $1
+add_vhost_conf $1 $2 
+</code></pre>
+
+<p>The template file 'localvhost.tpl' needs to sit in the same folder like 'add.sh':</p>
+
+<pre><code>
+#VHOSTSTART {VHOSTNAME}
+&lt;VirtualHost *:80 &gt; 
+	DocumentRoot "{VHOSTDIRECTORY}"
+	ServerName {VHOSTNAME}
+	ErrorLog /private/var/log/apache2/{VHOSTNAME}-error_log
+	CustomLog /private/var/log/apache2/{VHOSTNAME}-access_log common
+&lt;/VirtualHost&gt;
+
+&lt;Directory {VHOSTDIRECTORY}&gt;
+	Options Indexes Includes FollowSymLinks SymLinksifOwnerMatch ExecCGI MultiViews
+	AllowOverride All
+	Order allow,deny
+	Allow from all
+&lt;/Directory&gt;
+#VHOSTEND {VHOSTNAME}
+</code></pre>
+
+<p>
+You should now be able to add vhosts by typing:
+</p>
+
+<pre><code>
+cd /path/to/shellscript/folder
+sudo add.sh vhostname /path/to/vhost/webroot
+</code></pre>
+
+<p>
+Once you're done do an apache restart again:
+</p>
+
+<pre><code>
+sudo apachectl restart
+</code></pre>

@@ -1,0 +1,146 @@
+---
+layout : post
+permalink : /content/php-worker-processes-with-beanstalk-and-daemontools/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "PHP worker processes with Beanstalk and Daemontools"
+date : "2010-03-31 22:26:47"
+dateformatted : "March 31 2010, 22:26"
+excerpt : |
+    <p>
+    Sometimes things just get too heavy for a straight forward approach. Memory usage might be too high or interaction might be delayed. In this case it might make sense to queue the task up for later execution.
+    </p>
+categories : 
+   - March 2010
+   - "Pascal Opitz"
+---
+
+<p>
+Before I get started on this one I want to apologize for being slack the last couple of months. Maybe being on holiday for two months slightly corrupted my morale, or maybe that was down to the nice wine tasting sessions in the Barossa Valley and the McLaren Vale.
+In any case, it's been a long time. I have been back for one month but I am still finding it hard to live up to my own expectations in terms of writing and tech research.
+</p>
+
+<p>But after moaning, on with the programme:</p>
+
+<p>
+Sometimes things just get too heavy for a straight forward approach. Memory usage might be too high or interaction might be delayed. In this case it might make sense to queue the task up for later execution.
+</p>
+
+<h2>A message queue</h2>
+
+<p>
+<a href="http://kr.github.com/beanstalkd/">Beanstalkd</a> is a very easy to use message queue. There are client libraries for it in many languages, and it seems to be very popular amongst the Ruby crowd.
+</p>
+
+<p>Installing it on OSX using macports is easy peasy:</p>
+
+<pre><code>sudo port install beanstalkd</code></pre>
+
+<p>Kicking it off is equally as easy:</p>
+
+<pre><code>beanstalkd -d -l 127.0.0.1 -p 11300</code></pre>
+
+<h2>Pushing things into the queue</h2>
+
+<p>
+We're using pheanstalk as the client library to connect to beanstalkd, and this script is just generating 1000 dummy jobs to be picked up later by our daemonized worker process.
+</p>
+
+<pre><code>&lt;?php
+require_once('pheanstalk/pheanstalk_init.php');
+$pheanstalk = new Pheanstalk('127.0.0.1:11300');
+
+for($i=0; $i&lt;1000; $i++) {
+  $job = new stdClass();
+  $job-&gt;envelope_id = rand();
+  $job-&gt;date = date('Y-m-d H:i:s');
+  $job_data = json_encode($job);
+  $pheanstalk-&gt;useTube('test')-&gt;put($job_data);
+  echo "pushed: " . $job_data . "\n";
+}
+</code></pre>
+
+<h2>Picking up things from the queue</h2>
+
+<p>Our worker script now needs to connect to the queue and pick up the jobs. Things get dumped into a logfile which we can have an eye on to see if it's running alright. In order to prevent memory leaks it terminates itself when it hits a certain memory threshold. In this case the threshold is just picked for demo purposes, and the counter and the done_jobs array are just there to increase the memory footprint.</p>
+
+<pre><code>&lt;?php
+class Worker {
+  
+  private $path;
+
+  public function __construct($path) {
+    $this-&gt;setBasePath($path);
+    $this-&gt;log('starting');
+    require_once('pheanstalk/pheanstalk_init.php');
+    $this-&gt;pheanstalk = new Pheanstalk('127.0.0.1:11300');
+  }
+   
+  public function __destruct() {
+    $this-&gt;log('ending');
+  }
+  
+  private function setBasePath($path) {
+    $this-&gt;path = $path;
+  }
+
+  public function run() {
+    $this-&gt;log('starting to run');
+    $cnt = 0;
+    $done_jobs = array();
+
+    while(1) {
+      $job = $this-&gt;pheanstalk-&gt;watch('test')-&gt;ignore('default')-&gt;reserve();
+      $job_encoded = json_decode($job-&gt;getData(), false);
+      $done_jobs[] = $job_encoded;
+      $this-&gt;log('job:'.print_r($job_encoded, 1));
+      $this-&gt;pheanstalk-&gt;delete($job);
+      $cnt++;
+
+      $memory = memory_get_usage();
+
+      $this-&gt;log('memory:' . $memory);
+
+      if($memory &gt; 1000000) {
+        $this-&gt;log('exiting run due to memory limit');
+        exit;
+      }
+
+      usleep(10);
+    }
+  }
+  
+  private function log($txt) {
+    file_put_contents($this-&gt;path . '/log/worker.txt', $txt . "\n", FILE_APPEND);
+  }
+}
+
+$worker = new Worker(dirname($argv[0]));
+$worker-&gt;run();
+</code></pre>
+
+<h2>Daemonize the worker process.</h2>
+
+<p>Now the only problem we have is keeping the worker process running. <a href="http://cr.yp.to/daemontools.html">Deamontools</a> are a collection of binaries that can supervise processes and restart them when they stop.</p>
+
+<h3>Installing daemontools</h3>
+
+<p>Again, installing on OSX is pretty straight forward:</p>
+
+<pre><code>sudo port install daemontools</code></pre>
+
+<p>We also need a shell script called <code>./run</code> to be supervised by daemontools. Usually these go into a subfolder of <code>/service</code>, but the macports installation uses <code>/opt/local/var/svscan/service</code> instead. I chose to create a subfolder in my application and then symlink it into there. The shell script itself is pretty simple:</p>
+
+<pre><code>#!/bin/sh
+php ../worker.php</code></pre>
+
+<p>Now launch daemontools and you're up and away. Kick off the push script and the worker activity should show up nicely in the logfile.</p>
+
+<p>
+In this case I am using daemontools to do this, but there are other tools to do it as well.
+The best option seemed to be <a href="http://supervisord.org/">supervisord</a>, but the download page was down when I did the proof of concept and I had to settle for something else. Supervisord also seems to be able to watch the memory footprint of a task so this bit in the worker script might be obsolete.</p>
+
+<p>There are also options to use init.d scripts, but my knowledge of that is lacking. If you cannot be bothered to daemonize, you could also just kick off a cron job.
+</p>
+
+<p>I hope this is a helpful little writeup. Feel free to <a href="http://www.contentwithstyle.co.uk/resources/queue_test.zip">download the nicely zipped up demo code</a>, and do drop a comment if you have anything to add.</p>

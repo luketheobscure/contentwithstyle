@@ -1,0 +1,79 @@
+---
+layout : post
+permalink : /content/setting-up-ssl-for-nginx/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Setting up SSL for Nginx"
+date : "2010-09-30 19:56:53"
+dateformatted : "September 30 2010, 19:56"
+excerpt : |
+    <p>Quite a kerfuffle trying to set up SSL encryption for <a href="http://www.tagbento.com">www.tagbento.com</a>, which runs on Nginx. Here is how it was done.</p>
+categories : 
+   - September 2010
+   - "Pascal Opitz"
+---
+
+<p>Quite a kerfuffle trying to set up SSL encryption for <a href="http://www.tagbento.com">www.tagbento.com</a>, which runs on Nginx. Here is how it was done.</p>
+
+<p>The files I had gotten came via the client from <a href="http://www.startssl.com/">startSSL</a>. The following were present:</p>
+
+<pre><code>
+ssl.crt
+ssl.key
+ca.pem
+sub.class2.server.ca.pem
+</code></pre>
+
+<p>I was used to having a cert and a key file from <a href="http://articles.slicehost.com/2007/12/19/ubuntu-gutsy-self-signed-ssl-certificates-and-nginx">generating self signed certificates</a>, but the rest? Unfortunately nginx wasn't mentioned in the <a href="http://www.startssl.com/?app=20">howto pages</a> at all.</p>
+
+<h2>Remove the password from the key file:</h2>
+
+<p>If you don't do <a href="http://www.madboa.com/geek/openssl/#key-removepass">this</a> with every configtest or reload/restart of nginx you'll have to type in the PEM password.</p>
+
+<pre><code>
+mv ssl.key bak.key
+openssl rsa -in bak.key -out ssl.key
+</code></pre>
+
+<h2>Creating a combined key certificate</h2>
+
+<p>Probably the most confusing point. The <a href="http://wiki.nginx.org/NginxHttpSslModule">Nginx manual</a> explains why you'll have to do this:</p>
+
+<blockquote><p>
+if you have a chain of certificates — by having intermediate certificates between the server certificate and the CA root certificate — they're not specified separately like you would do for Apache. Instead you'll need to concatenate all the certificates, starting with the server certificate, and going deeper in the chain running through all the intermediate certificates.
+</p></blockquote>
+
+<pre><code>
+mv ssl.crt bak.crt
+cat ssl.crt ca.pem sub.class2.server.ca.pem > ssl.crt
+</code></pre>
+
+<h3>Tribulations</h3>
+
+<p>At this point I was quite confused, because instructions for level 1certificates were slightly different. The main problem, as it turned out though, was that the ssl.crt I had been given had Windows line breaks in it. So yeah, if stuff doesn't work, have a look at the concatenated file in vim and see if you can see something unusual.</p>
+
+<h2>Enable SSL in the Nginx Vhost</h2>
+
+<pre><code>
+server {
+        listen 443;
+
+        ssl on;
+        ssl_certificate /path/to/ssl.crt;
+        ssl_certificate_key /path/to/ssl.key;
+
+        server_name www.tagbento.com;
+
+        ... 
+}
+</code></pre>
+
+<h2>Test and Reload Nginx configuration</h2>
+
+<pre><code>
+/etc/init.d/nginx configtest
+/etc/init.d/nginx reload
+</code></pre>
+
+
+<p>That's it, enjoy!</p>

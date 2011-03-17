@@ -1,0 +1,70 @@
+---
+layout : post
+permalink : /content/a-quick-look-at-xinclude-and-xlink/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "A quick look at XInclude and XLink"
+date : "2008-12-13 16:47:26"
+dateformatted : "December 13 2008, 16:47"
+excerpt : |
+    <p>Part of my current project is to transform thousands of static XML files, all interlinked and some of them referencing others as data subset that I need for the transformation. Time to have a quick look at XInclude and XLink.</p>
+categories : 
+   - December 2008
+   - "Pascal Opitz"
+---
+
+<p>Part of my current project is to transform thousands of static XML files, all interlinked and some of them referencing others as data subset that I need for the transformation. Time to have a quick look at XInclude and XLink.</p>
+
+<h2>XLink</h2>
+
+<p>
+<a href="http://en.wikipedia.org/wiki/XLink">Xlink</a> is an XML application that defines hyperlinks in XML documents. While <a href="http://www.w3.org/TR/xlink/#extended-link">XLink supports extended links</a>, which are able to define multiple hyperlinks from one XML node, the form that is easy to deal with straight away is the one defined by <code>type="simple"</code>.
+</p>
+
+<p>
+Like with all XML applications that use certain definitions, don't forget to include the namespaces in the XML and XSL document, and if you generate HTML, exclude them from being outputted by the transformation using the <code>exclude-result-prefixes</code> attribute.
+<br />
+Below is an example for a transformation in XSL.
+</p>
+
+<pre><code>
+&lt;xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    exclude-result-prefixes="xlink"&gt;
+    
+    &lt;xsl:output method="html"/&gt;
+
+    &lt;xsl:template match="/"&gt;
+        &lt;xsl:apply-templates/&gt;
+    &lt;/xsl:template&gt;
+
+    &lt;xsl:template match="*[@xlink:type = 'simple' and @xlink:href]"&gt;
+        &lt;a href="{@xlink:href}"&gt;&lt;xsl:apply-templates/&gt;&lt;/a&gt;
+    &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+</code></pre>
+
+<p>As for the extended type of XLink references, this could come in handy to generate link lists for certain text elements and similar stuff where a 1:N relationship is needed.</p>
+
+<h2>XInclude</h2>
+
+<p><a href="http://en.wikipedia.org/wiki/XInclude">XInclude</a> is an inclusion mechanism for XML, think SSI or PHP's <code>include()</code>. Just that it is that bit more powerful, because it can use <a href="http://en.wikipedia.org/wiki/XPointer">XPointer</a> to identify the nodes that it needs to include from the referenced document, and it provides a <a href="http://www.w3.org/TR/xinclude/#fallback_element">fallback element</a> for when the inclusion fails.</p>
+
+<pre><code>
+&lt;xi:include href="my.xml#xpointer(//node)"&gt; 
+  &lt;xi:fallback&gt;
+   &lt;fb&gt;error&lt;/fb&gt;
+  &lt;/xi:fallback&gt;
+&lt;/xi:include&gt;
+</code></pre>
+
+<p>Sadly this is not natively supported in browsers, but various DOM parsers have a mechanism in place that will include the referenced files, e.g. <a href="http://uk2.php.net/manual/en/function.domdocument-xinclude.php">PHP's <code>DomDocument-&gt;xinclude</code></a>:</p>
+
+<pre><code>
+$xml = new DomDocument;
+$xml->load('data.xml');
+$xml->xinclude();
+</code></pre>
+
+<p>Again make sure that the namespaces are included. Also, if you use nested levels of includes, depending on the DOM parser, this might not automatically get resolved. For how to address this behaviour in PHP, <a href="http://uk2.php.net/manual/en/function.domdocument-xinclude.php#44954">see the comments at PHP.net</a>.</p>

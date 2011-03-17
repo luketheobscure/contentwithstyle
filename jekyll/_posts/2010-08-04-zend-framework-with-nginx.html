@@ -1,0 +1,143 @@
+---
+layout : post
+permalink : /content/zend-framework-with-nginx/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Zend Framework with nginx and php-fastcgi"
+date : "2010-08-04 21:16:46"
+dateformatted : "August 4 2010, 21:16"
+excerpt : |
+    <p>
+    Since I while I heard good things about nginx and wanted to use it for my Zend Framework MVC applications.
+    I just got a Ubuntu server working after one of those days that seem to be a never ending Google search and debugging session, so I thought I'd share the outcome with you.
+    </p>
+categories : 
+   - August 2010
+   - "Pascal Opitz"
+---
+
+<p>
+Since I while I heard good things about nginx and wanted to use it for my Zend Framework MVC applications.
+I just got a Ubuntu server working after one of those days that seem to be a never ending Google search and debugging session, so I thought I'd share the outcome with you.
+</p>
+
+<h2>Install packages</h2>
+
+<p>
+First off you'll need to install a couple of packages, as outlined in the excellent <a href="http://davidwinter.me.uk/articles/2009/06/13/php-and-nginx-the-easy-way/">howto by david winter</a>:
+</p>
+
+<pre><code>sudo aptitude install php5-cgi nginx
+</code></pre>
+
+<h2>Configure PHP fastcgi</h2>
+
+<p>Then create an init.d file to manage the php-fastcgi process</p>
+
+<pre><code>sudo nano /etc/init.d/php-fastcgi
+</code></pre>
+
+<p>Inside put</p>
+
+<pre><code>#!/bin/bash
+BIND=127.0.0.1:9000
+USER=www-data
+PHP_FCGI_CHILDREN=15
+PHP_FCGI_MAX_REQUESTS=1000
+
+PHP_CGI=/usr/bin/php-cgi
+PHP_CGI_NAME=`basename $PHP_CGI`
+PHP_CGI_ARGS="- USER=$USER PATH=/usr/bin PHP_FCGI_CHILDREN=$PHP_FCGI_CHILDREN PHP_FCGI_MAX_REQUESTS=$PHP_FCGI_MAX_REQUESTS $PHP_CGI -b $BIND"
+RETVAL=0
+
+start() {
+      echo -n "Starting PHP FastCGI: "
+      start-stop-daemon --quiet --start --background --chuid "$USER" --exec /usr/bin/env -- $PHP_CGI_ARGS
+      RETVAL=$?
+      echo "$PHP_CGI_NAME."
+}
+stop() {
+      echo -n "Stopping PHP FastCGI: "
+      killall -q -w -u $USER $PHP_CGI
+      RETVAL=$?
+      echo "$PHP_CGI_NAME."
+}
+
+case "$1" in
+    start)
+      start
+  ;;
+    stop)
+      stop
+  ;;
+    restart)
+      stop
+      start
+  ;;
+    *)
+      echo "Usage: php-fastcgi {start|stop|restart}"
+      exit 1
+  ;;
+esac
+exit $RETVAL
+</code></pre>
+
+<p>Then we change permissions on this, start the fastcgi and register it as startup item</p>
+
+<pre><code>sudo chmod +x /etc/init.d/php-fastcgi
+sudo /etc/init.d/php-fastcgi start
+sudo update-rc.d php-fastcgi defaults
+</code></pre>
+
+<h2>Configure nginx</h2>
+
+<p>
+Now we need to set up a vhost for ZF application in nginx.
+This is a pretty straight forward job, as the nginx package in Ubuntu features the well knows sites-available/sites-enabled folder structure.
+I will assume that the application lives in /var/www/zfapp, has all the needed dependencies in the library folder and the host name for it will be zfapp.
+</p>
+
+<p>First off we create a config file in the sites-available folder:</p>
+
+<pre><code>sudo vim /etc/nginx/sites-available/zfapp</code></pre>
+
+<p>Inside we put the vhost config:</p>
+
+<pre><code>server {
+        listen 80;
+        server_name zfapp;
+        root /var/www/zfapp/public;
+        index /index.php;
+
+        # remove trailing slash, that throws ZF router
+        rewrite ^/(.*)/$ /$1 break;
+
+        location / {
+                # if file is existing, skip fastcgi parsing
+                if (-e $request_filename) {
+                        break;
+                }
+
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_index index.php;
+                include /etc/nginx/fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME /var/www/zfapp/public/index.php;
+                
+                # get the relevant environment
+                fastcgi_param APPLICATION_ENV staging;
+        }
+
+        # expires headers on known filetypes
+        location ~* ^.+.(css|js|jpeg|jpg|gif|png|ico) {
+                expires 30d;
+        }
+}
+</code></pre>
+
+<p>Now we just need to symlink this file into sites-enabled and restart nginx</p>
+
+<pre><code>sudo ln -s /etc/nginx/sites-available/zfapp /etc/nginx/sites-enabled/zfapp
+sudo /etc/init.d/nginx restart
+</code></pre>
+
+<p>That's it. Should be working.</p>

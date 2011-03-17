@@ -1,0 +1,44 @@
+---
+layout : post
+permalink : /content/301-redirect-with-modrewrite/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "301 redirect with mod_rewrite"
+date : "2007-04-25 09:10:39"
+dateformatted : "April 25 2007, 09:10"
+excerpt : |
+    <p>So I changed my domain name from .de to .com. But wasn&rsquo;t there something whereas Google would punish double-posted content with pagerank 0?</p>
+categories : 
+   - April 2007
+   - "Pascal Opitz"
+---
+
+	<p>
+So I changed my domain name from .de to .com. But wasn&#8217;t there something whereas Google would punish double-posted content with pagerank 0? That&#8217;s where a 301 redirect comes in, as neatly explained on <a href="http://www.gnc-web-creations.com/301-redirect.htm">this tutorial by GNC Web Creations</a>. The straight forward way to point an old domain to a new one would be putting this into the .htaccess:
+</p>
+
+<pre><code>
+Redirect 301 /foo http://foobar.com/foo
+</code></pre>
+
+	<p>OR</p>
+
+<pre><code>
+Redirect permanent /foo http://foobar.com/foo
+</code></pre>
+
+	<p>
+Now in my particular setting it was a bit more difficult, the domain was pointing to the same directory on the same server. And all that on a GUID managed system, so no fiddling around in the httpd.conf files.</p>
+
+<p>
+Thankfully the whole issue is easily solved utilizing the reg exp based rules of mod-rewrite, examining the HTTP_HOST of the request:<br />
+</p>
+
+<pre><code>
+RewriteEngine ON
+RewriteCond %{HTTP_HOST} ^(www.)?example.de
+RewriteRule ^(.*) http://www.example.com/$1 [R=301,L]
+</code></pre>
+
+
+ 

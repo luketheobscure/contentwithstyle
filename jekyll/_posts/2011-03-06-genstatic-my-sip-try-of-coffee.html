@@ -1,0 +1,65 @@
+---
+layout : post
+permalink : /content/genstatic-my-sip-try-of-coffee/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Genstatic, my first sip of coffee"
+date : "2011-03-06 06:16:54"
+dateformatted : "March 6 2011, 06:16"
+excerpt : |
+    <p>
+    Having to spend more time at home means I can try out things. I know I'm late to the party, but I really wanted to have a go at using <a href="http://jashkenas.github.com/coffee-script/">coffeescript</a>. Sceptical at first, I really got to like it and quickly threw together a little static site generator: <a href="https://github.com/pascalopitz/genstatic">Genstatic</a>.
+    </p>
+categories : 
+   - March 2011
+   - "Pascal Opitz"
+---
+
+<p>
+Having to spend more time at home means I can try out things. I know I'm late to the party, but I really wanted to have a go at using <a href="http://jashkenas.github.com/coffee-script/">coffeescript</a>. Sceptical at first, I really got to like it and quickly threw together a little static site generator: <a href="https://github.com/pascalopitz/genstatic">genstatic</a>.
+</p>
+
+<p>
+I had seen .coffee files in many node projects lately, but it was a little <a href="http://twitter.com/#!/pascalopitz/status/41121018554753024">twitter converstaion</a> with our own Mike Stenhouse of course that finally brought me to taking a closer look.
+</p>
+
+<p>
+I had to do a pretty tedious static HTML job that didn't fit the bog standard blog structure, so I decided to roll my little static site generator, and that's how genstatic came about.</p>
+
+<h2>Coffescript creates Javascript</h2>
+
+<p>The first way I used coffee scrip was to compile it down to javascript, then run javascript in node. For this I'd have a a folder called <code>./lib</code> and a folder called <code>./src</code>. Then you run:</p>
+
+<pre><code>
+coffee -w -c -o ./lib ./src
+</code></pre>
+
+<p>
+This will watch the files in <code>./src</code> and automatically compile them down to js into the <code>./lib</code> folder.
+</p>
+
+<p>
+I figure that with today's requirement of minification and concatination most people have to have some sort of compilation step in their deployment process anyway. Using coffee script could also be used in that. The <code>-j</code> flag will join scripts together for you as well, so in that respect it might make testing even easier.
+</p>
+
+<h2>Coffescript in node</h2>
+
+<p>While the above is great, in node we even can use coffeescript at runtime:</p>
+
+<pre><code>
+var coffee = require('coffee-script');
+require('my.coffee');
+str = coffee.compile(mystr);
+</code></pre>
+
+<p>This is very useful of course, and I have made good use of it in genstatic where you define meta stuff and helpers in coffeescript as well. These will then be read into strings and executed via node's brilliant <code>vm.runInNewContext()</code>.</p>
+
+<h2>Wrapping it up</h2>
+
+<p>Having this little go my initial scepticism vanished pretty quickly and I think I'll use it from now on where ever I can.</p>
+
+<p>If you want to see coffeescript in action, go to the <a href="http://jashkenas.github.com/coffee-script/">coffeescript project pages</a> or clone the git of <a href="https://github.com/pascalopitz/genstatic">genstatic</a>.</p>
+
+<p>Of course if you need to generate a static site, maybe give genstatic a go and let me know how it worked for you. A simple <code>npm install genstatic</code> and you should be on your way.</p>
+
+<p>So there you have it: genstatic, my first sip of coffee</p>

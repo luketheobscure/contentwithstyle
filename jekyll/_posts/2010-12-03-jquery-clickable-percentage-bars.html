@@ -1,0 +1,162 @@
+---
+layout : post
+permalink : /content/jquery-clickable-percentage-bars/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "jQuery clickable percentage bars"
+date : "2010-12-03 11:50:10"
+dateformatted : "December 3 2010, 11:50"
+excerpt : |
+    <p>Just a little script I have been coding up to deal with input fields that represent a percentage value. See <a href="http://www.contentwithstyle.co.uk/resources/percentage/index.html">the demo</a> or get the <a href="https://github.com/pascalopitz/jquery-percentage">code on github</a>. Enjoy.</p>
+categories : 
+   - December 2010
+   - "Pascal Opitz"
+---
+
+<p>Just a little script I have been coding up to deal with input fields that represent a percentage value. See <a href="http://www.contentwithstyle.co.uk/resources/percentage/index.html">the demo</a> or get the <a href="https://github.com/pascalopitz/jquery-percentage">code on github</a>. Enjoy.</p>
+
+<p><strong>Update</strong>: I modified the code and moved it from a gist into a public repo on <a href="https://github.com/pascalopitz/jquery-percentage">github</a>.</p>
+
+<pre><code>
+(function(){
+    var _self = this;
+    
+    function render(conf, val) {
+        var elems = this;
+        
+        if(conf == 'destroy') {
+            $(elems).each(function() {
+                $(this).show();
+
+                if(this.percentage) {
+                    $(this.percentage).remove();
+                }
+            })
+            return elems;
+        }
+
+        var defaults = {
+            width: 200,
+            height: 15,
+            border: '1px solid #000000',
+            color: '#cc0000',
+            background: '#ffffff',
+            clickable: true,
+            classname: 'percentage',
+            display: 'inline-block'
+        };
+        
+        if(conf == undefined) {
+            conf = defaults;
+        } else {
+            for(i in defaults) {
+                if(conf[i] == undefined) {
+                    conf[i] = defaults[i];
+                }
+            }
+        }
+        
+        function getLeft(newVal) {
+            return Math.floor((conf.width * -1) + (conf.width / 100 * newVal))
+        }
+        
+        function updateElem(elem, val) {
+            if($(elem).is('textarea,input,select')) {
+                $(elem)
+                    .attr('value', val)
+                    .val(val)
+                    .attr('title', val + '%')
+                    ;
+            } else {
+                $(elem)
+                    .text(val + '%')
+                    ;
+            }
+        }
+
+        if(conf == 'set') {
+            $(elems).each(function() {
+                var elem = this;
+                conf = elem.percentage_conf;
+                updateElem(elem, val);
+                $(elem.percentage).find('div').css('left', getLeft(val));
+            });
+            return elems;
+        }
+
+        $(elems).each(function() {
+            var elem = this;
+            var bar = $('&lt;div&gt;&lt;/div&gt;');
+            var inner = $('&lt;div&gt;&lt;/div&gt;');
+            
+            var percent;
+            var hasValue;
+            
+            if($(elem).is('textarea,input,select')) {
+                percent = $(elem).val();
+                hasValue = true;
+            } else {
+                percent = parseInt($(elem).text().replace('%', ''));
+                hasValue = false;
+            }
+            
+            function handleClick(e) {
+                var p = $(this).offset();
+                var percent = Math.ceil((e.clientX - p.left) / (conf.width / 100));
+                
+                updateElem(elem, percent);
+                $(elem).trigger('clickupdate');
+                
+                $(inner)
+                    .css('left', getLeft(percent))
+                    ;
+                
+                return false;
+            }
+            
+            $(bar)
+                .attr('title', percent + '%')
+                .css('display', conf.display)
+                .css('border', conf.border)
+                .css('background', conf.background)
+                .css('position', 'relative')
+                .css('overflow', 'hidden')
+                .css('width',  conf.width)
+                .css('height', conf.height)
+                ;
+                
+            if(conf.clickable) {
+                $(bar).click(handleClick);
+            }
+
+            if(conf.classname) {
+                $(bar).addClass(conf.classname);
+            }
+
+            $(inner)
+                .css('background', conf.color)
+                .css('position', 'absolute')
+                .css('top', 0)
+                .css('left', getLeft(percent))
+                .css('width',  conf.width)
+                .css('height', conf.height)
+                .appendTo(bar)
+                ;
+            
+            $(elem)
+                .hide()
+                .after(bar)
+                ;
+                
+            this.percentage = bar;
+            this.percentage_conf = conf;
+        });
+        
+        return elems;
+    }
+
+    jQuery.fn.percentage = function() {
+        render.apply(this, arguments);
+    };
+})();
+</code></pre>

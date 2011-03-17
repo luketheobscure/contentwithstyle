@@ -1,0 +1,44 @@
+---
+layout : post
+permalink : /content/domdocument-loadxml-throws-errors-a-bug-not-a-feature/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "DOMDocument loadXML throws errors: A bug?"
+date : "2009-04-22 17:37:46"
+dateformatted : "April 22 2009, 17:37"
+excerpt : |
+    <p>So I was wondering why loadXML gives me parsing errors, despite a big try and catch around it ... <a href="http://php.filearena.net/manual/kr/function.dom-domdocument-loadxml.php#69295">it's not a bug they say</a>.</p>
+categories : 
+   - April 2009
+   - "Pascal Opitz"
+---
+
+<p>So I was wondering why loadXML gives me parsing errors, despite a big try and catch around it ... <a href="http://php.filearena.net/manual/kr/function.dom-domdocument-loadxml.php#69295">it's not a bug they say</a>.</p>
+
+<p>
+Gavin Sinai put up a code snippet in the PHP.net reference, which shows how to set the error handler to get rid of it: 
+</p>
+
+<pre><code>
+&lt;?php
+function HandleXmlError($errno, $errstr, $errfile, $errline)
+{
+   if ($errno==E_WARNING &amp;&amp; (substr_count($errstr,"DOMDocument::loadXML()")&gt;0))
+   {
+       throw new DOMException($errstr);
+   }
+   else
+       return false;
+}
+
+function XmlLoader($strXml)
+{
+   set_error_handler('HandleXmlError');
+   $dom = new DOMDocument();
+   $dom-&gt;loadXml($strXml);   
+   restore_error_handler();
+   return $dom;
+ }
+
+?&gt;
+</code></pre>

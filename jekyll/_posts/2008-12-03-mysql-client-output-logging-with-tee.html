@@ -1,0 +1,16 @@
+---
+layout : post
+permalink : /content/mysql-client-output-logging-with-tee/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "MySQL client output logging with tee"
+date : "2008-12-03 13:44:08"
+dateformatted : "December 3 2008, 13:44"
+excerpt : |
+    <p>James, the sys admin guy here at <a href="http://www.sportingstatz.com/">Opta</a>, where I am working at the moment, brought this up, and it is one of those neat tricks that can make life very easy but I still didn't know about.</p>
+categories : 
+   - December 2008
+   - "Pascal Opitz"
+---
+
+<p>James, the sys admin guy here at <a href="http://www.sportingstatz.com/">Opta</a>, where I am working at the moment, brought this up, and it is one of those neat tricks that can make life very easy but I still didn't know about.</p><p>A look in the <a href="http://www.aip.de/%7Eweber/doc/mysql/manual_Client-Side_Scripts.html">manual</a> reveals that in the command line 'tee /path/to/file.txt' sets the output file, and 'notee' unsets it and therefore stops the logging.</p><p>Alternatively \T and \t can be used.</p><p>Happy logging.</p>

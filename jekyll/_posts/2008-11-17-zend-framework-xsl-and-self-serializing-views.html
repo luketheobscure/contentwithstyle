@@ -1,0 +1,264 @@
+---
+layout : post
+permalink : /content/zend-framework-xsl-and-self-serializing-views/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Zend Framework: XSL and self-serializing Views"
+date : "2008-11-17 01:39:34"
+dateformatted : "November 17 2008, 01:39"
+excerpt : |
+    <p>A long time ago I argued that MVC style frameworks should use XSL instead of inline PHP code and so on.
+    That's why I knocked together a little proof of concept for Zend Framework
+    where the views files are XSLs and the View object serializes itself
+    into XML for rendering.</p>
+categories : 
+   - November 2008
+   - "Pascal Opitz"
+---
+
+<p>A long time ago I argued that MVC style frameworks should use XSL instead of inline PHP code and so on. That's why I knocked together a little proof of concept for Zend Framework where the views files are XSLs and the View object serializes itself into XML for rendering.</p>
+
+<h2>Basic MVC structure</h2>
+
+<p>I just created a demo layout, utilizing the standard MVC structure of Zend_Controller:</p>
+
+<pre> |-application
+ |---default
+ |-----controllers
+ |-----models
+ |-----views
+ |-------filters
+ |-------helpers
+ |-------scripts
+ |---------index
+ |---------test
+ |-library
+ |---demo
+ |---zendframework_1.6.2
+ |-webroot
+</pre>
+
+<p>Of course now we need a bootstrap file:</p>
+
+<pre><code class="php">set_include_path('.'
+	. PATH_SEPARATOR . '../library/zendframework_1.6.2/'
+	. PATH_SEPARATOR . '../library/demo/'
+	. PATH_SEPARATOR . '../application/default/controllers'
+	. PATH_SEPARATOR . get_include_path());
+
+require_once('Zend/Loader.php');
+Zend_Loader::loadClass('Zend_Controller_Front');
+Zend_Loader::loadClass('Zend_Controller_Action_Helper_ViewRenderer');
+
+$frontController = Zend_Controller_Front::getInstance();
+$frontController-&gt;setControllerDirectory(array(
+	'default' =&gt; '../application/default/controllers',
+));
+
+require_once 'View_Xslt.php';
+$view = new View_Xslt;
+$options = array();
+$viewRenderer = new Zend_Controller_Action_Helper_ViewRenderer($view, $options);
+$viewRenderer-&gt;setViewSuffix('xsl');
+Zend_Controller_Action_HelperBroker::addHelper($viewRenderer);
+
+$frontController-&gt;dispatch();</code></pre>
+
+<p>Note that I have provided a new viewRenderer and view object, which is called View_Xslt.php and is located in the library/demo folder.
+Also I set the view suffix to xsl.</p><p><a href="http://www.contentwithstyle.co.uk/resources/xslt_views_demo.zip">A ZIP file containing the whole demo (excluding the Zend Framework files) can be downloaded here</a>. </p>
+
+<h2>The View Object</h2>
+
+<p>
+The view object itself needs to be a class that extends Zend_View_Abstract. The rendering of the views happens in the _run method, and the view file will be passed as the first argument. However, this argument needs to be accessed with func_get_arg, otherwise we're confronted with a neat error message that our declaration is incompatible with Zend_View_Abstract.</p><p>In order to make my view object self-serializing later, I also added the Serializer in the constructor magic method, plus I added a private function that serializes the view into XML using the Serializer just created.</p>
+
+<pre><code class="php">require_once('Serializer.php');
+
+class View_Xslt extends Zend_View_Abstract
+{
+ private $serializer;
+ private $rootName;
+ 
+ public function __construct($data = array()) {
+ $this-&gt;serializer = new Serializer();
+ parent::__construct($data);
+ }
+
+ public function setRootName($name) {
+ $this-&gt;rootName = $name;
+ }
+ 
+ protected function _run() {
+ $template = func_get_arg(0); 
+ $xslDoc = new DOMDocument();
+ $xslDoc-&gt;load($template);
+ $xmlDoc = $this-&gt;toXml();
+ $proc = new XSLTProcessor();
+ $proc-&gt;importStylesheet($xslDoc);
+ echo $proc-&gt;transformToXML($xmlDoc);
+ }
+ 
+ private function toXml() {
+ $xml_str = $this-&gt;serializer-&gt;Serialize($this, $this-&gt;rootName);
+ return $xml_str;
+ }
+}</code></pre>
+
+<h2>The Serializer</h2>
+
+<p>So what does this Serializer do? It utilizes the <a href="http://uk2.php.net/manual/en/language.oop5.reflection.php">Reflection</a> functionality to serialize the object into an XML string. This enables us to normally assign variables to the view from within our controller actions, just by saying <code>$this-&gt;foo = 'bar'</code>.</p><p><a href="http://www.contentwithstyle.co.uk/content/xml-serialization-and-php-reflection">I did a quick post on XML Serialization before</a>, and the Serializer I have provided is inspired by what I have found there. DISCLAIMER: Keep in mind that this is just a proof of concept, and to get this working perfectly it probably needs a bit more work.</p>
+<pre><code class="php">class Serializer
+{
+ private $xmlDoc;
+ 
+ public function __construct() {
+ $this-&gt;xmlDoc = new DOMDocument();
+ }
+ 
+ public function Serialize($inst, $nodeName=null) {
+ if(is_object($inst))
+ {
+  $nodeName = ($nodeName == null) ? get_class($inst) : $nodeName;
+  $root = $this-&gt;xmlDoc-&gt;createElement($nodeName);
+  $this-&gt;xmlDoc-&gt;appendChild($root);
+  $this-&gt;SerializeObject($inst, $nodeName, $root);
+ } else if(is_array($inst)) {
+  $nodeName = ($nodeName == null) ? get_class($inst) : $nodeName;
+  $root = $this-&gt;xmlDoc-&gt;createElement($nodeName);
+  $this-&gt;xmlDoc-&gt;appendChild($root);
+  $this-&gt;SerializeArray($inst, $nodeName, $root);
+ }
+
+ return $this-&gt;xmlDoc;
+ }
+ 
+ private function SerializeObject($inst, $nodeName, $parent) {
+ $obj = new ReflectionObject($inst);
+ $properties = $obj-&gt;getProperties();
+ 
+ foreach($properties as $prop) {
+  if(!$prop-&gt;isPrivate()) {
+  $elem = $this-&gt;SerializeData($prop-&gt;getName(), $prop-&gt;getValue($inst), $parent);
+  }
+ }
+ }
+ 
+ private function SerializeArray($array, $nodeName, $parent) {
+ foreach($array as $key =&gt; $val) {
+  $keyStr = (is_numeric($key)) ? 'ArrayValue' : $key;
+  $elem = $this-&gt;SerializeData($keyStr, $val, $parent);
+  
+  if(is_numeric($key)) {
+  $elem-&gt;setAttribute('index', $key);
+  }
+ }
+ }
+ 
+ private function SerializeData($key, $val, $parent) {
+ if(is_object($val)) {
+  $propNodeName = get_class($val);
+  $elem = $this-&gt;xmlDoc-&gt;createElement($propNodeName);
+  $parent-&gt;appendChild($elem);   
+  $this-&gt;SerializeObject($val, $propNodeName, $parent);
+  $elem-&gt;setAttribute('type', 'object');
+ } else if(is_array($val)) {
+  $elem = $this-&gt;xmlDoc-&gt;createElement($key);
+  $parent-&gt;appendChild($elem);
+  $this-&gt;SerializeArray($val, $key, $elem);
+  $elem-&gt;setAttribute('type', 'array');
+ } else {
+  $elem = $this-&gt;xmlDoc-&gt;createElement($key, $val);
+  $parent-&gt;appendChild($elem);
+  $elem-&gt;setAttribute('type', 'property');
+ }
+ 
+ return $elem;
+ }
+}</code></pre>
+
+
+
+<h2>Controller and View files</h2><p>Nearly there. We'll just need some XSL file and a controller with an action to get the demo running. First the controller and action. I included a little Demo class, so we can see the Serializer in action:</p> 
+
+<pre><code class="php">class IndexController extends Zend_Controller_Action {
+	public function indexAction() {
+	 $this-&gt;view-&gt;setRootName('DataObject');
+
+	 $this-&gt;view-&gt;foo = 'bar';
+	 $this-&gt;view-&gt;super = array(
+	 'here' =&gt; 'there', 'foo' =&gt; array(1,2,'test'),
+	 );
+	 $this-&gt;view-&gt;testObject = new DemoObject();
+	 $this-&gt;view-&gt;testObject-&gt;var = 'testObjectVar';
+	}
+}
+
+class DemoObject {}</code></pre>
+
+<p>Then the view file(s). You could get away with just one, but because I wanted to imitate Zend_Layout, I did utilize xsl:import in order to do something similar.</p>
+
+<pre><code class="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+ &lt;xsl:import href="../layout.xsl"/&gt;
+
+ &lt;xsl:template match="DataObject"&gt;
+ &lt;xsl:apply-templates select="*" /&gt;
+ &lt;/xsl:template&gt;
+ 
+ &lt;xsl:template match="*"&gt;
+ &lt;div&gt;
+  &lt;h2&gt;&lt;xsl:value-of select="name()" /&gt;&lt;/h2&gt;
+  &lt;xsl:apply-templates select="text()" /&gt;
+  &lt;xsl:apply-templates select="*" /&gt;
+ &lt;/div&gt; 
+ &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+
+<pre><code class="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt;
+ &lt;xsl:output method="xml" encoding="ISO-8859-1" omit-xml-declaration="no" doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" indent="yes" /&gt;
+ &lt;xsl:template match="/"&gt;
+ &lt;html&gt;
+  &lt;head&gt;
+  &lt;title&gt;Test&lt;/title&gt;
+  &lt;/head&gt;
+  
+  &lt;body&gt;
+  &lt;xsl:apply-templates select="/*" /&gt;
+  &lt;/body&gt;
+ &lt;/html&gt;
+ &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</code></pre>
+
+<h2>Result</h2>
+
+<p>And that's it! Rendering the index page should give you an output looking somehow like this:</p>
+
+<pre><code class="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+ &lt;head&gt;
+ &lt;meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /&gt;
+ &lt;title&gt;Test&lt;/title&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+ &lt;div&gt;&lt;h2&gt;foo&lt;/h2&gt;bar&lt;/div&gt;
+
+ &lt;div&gt;
+ &lt;h2&gt;super&lt;/h2&gt;
+ &lt;div&gt;&lt;h2&gt;here&lt;/h2&gt;there&lt;/div&gt;
+ &lt;div&gt;
+ &lt;h2&gt;foo&lt;/h2&gt;
+ &lt;div&gt;&lt;h2&gt;ArrayValue&lt;/h2&gt;1&lt;/div&gt;
+
+ &lt;div&gt;&lt;h2&gt;ArrayValue&lt;/h2&gt;2&lt;/div&gt;
+ &lt;div&gt;&lt;h2&gt;ArrayValue&lt;/h2&gt;test&lt;/div&gt;
+ &lt;/div&gt;
+ &lt;/div&gt;
+ &lt;div&gt;
+ &lt;h2&gt;DemoObject&lt;/h2&gt;
+
+ &lt;/div&gt;
+ &lt;div&gt;&lt;h2&gt;var&lt;/h2&gt;testObjectVar&lt;/div&gt;
+ &lt;/body&gt;
+&lt;/html&gt;</code></pre>

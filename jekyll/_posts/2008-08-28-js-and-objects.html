@@ -1,0 +1,53 @@
+---
+layout : post
+permalink : /content/js-and-objects/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "JS and objects"
+date : "2008-08-28 10:22:43"
+dateformatted : "August 28 2008, 10:22"
+excerpt : |
+    <p>Just a quick moment trying to explain the different approaches to using objects in JS to a fellow co-worker &#8230;</p>
+categories : 
+   - August 2008
+   - "Pascal Opitz"
+---
+
+<p>Just a quick moment trying to explain the different approaches to using objects in Javascript to a fellow co-worker:</p>
+
+<pre><code>
+// Normal object with new keyword
+var myClass = function() {
+	var privateMethod = function() {
+	}
+		
+	this.publicFunc = function() {		
+	}
+}
+
+var myObj1 = new myClass();
+var myObj2 = new myClass();
+var myObj3 = new myClass();
+
+
+// Singleton with new keyword
+var mySingleton = new function() { 
+	this.foo = function() {}
+}
+mySingleton.foo();
+
+
+// Singleton without assignment - YUI style
+(function(){
+})();
+
+// Object literal
+var myObjLiteral = {
+	'foo' : function() {},
+	'bar' : function() {}
+}
+</code></pre>
+
+<p>I am sure that I missed out some important ones, but feel free just to put them into the comments.</p>
+
+

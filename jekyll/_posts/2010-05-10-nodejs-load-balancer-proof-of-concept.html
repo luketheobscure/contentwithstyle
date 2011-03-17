@@ -1,0 +1,266 @@
+---
+layout : post
+permalink : /content/nodejs-load-balancer-proof-of-concept/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Node.js load balancer proof of concept"
+date : "2010-05-10 10:32:49"
+dateformatted : "May 10 2010, 10:32"
+excerpt : |
+    <p>Down with a cold, the only bit I managed was a bit more experimenting with node.js this weekend. Here's a little example of node.js acting as a very basic load balancer with  fault tolerance.</p>
+categories : 
+   - May 2010
+   - "Pascal Opitz"
+---
+
+<p>Down with a cold, the only bit I managed was a bit more experimenting with node.js this weekend. Here's a little example of node.js acting as a very basic load balancer with  fault tolerance.</p>
+
+
+<p>I did create a <a href="http://github.com/pascalopitz/nodeload">repo on github</a>, feel free to contribute or fork if you find this useful.</p>
+
+<h2>Project Files</h2>
+
+<pre><code>
+$ ls -h
+README			cluster.conf.json
+balancer.js		testserver.js
+</code></pre>
+
+
+<h2>Load Balancer</h2>
+
+<pre><code>
+var sys = require('sys'), 
+  http = require('http'),
+  fs = require('fs');
+
+var LoadBalancer = new function() {
+  var _self = this;
+  var _server;
+  var _cluster = [];
+  var _active = [];
+  var _port = 8888;
+  var _checkInterval = 10000;
+  var _checkTimeout = [];
+
+  var _updateActives = function() {
+    _active = [];
+    for(var i=0; i&lt;_cluster.length; i++) {
+      if(_cluster[i].active) {
+        _active[_active.length] = _cluster[i];
+      }
+    }
+  };
+
+  var _loadCluster = function(callback) {
+    fs.readFile('./cluster.conf.json', function (err, data) {
+      if (err) throw err;
+      _cluster = JSON.parse(data.toString().replace('\n', ''));
+      callback();
+    });
+  };
+  
+  var _checkCluster = function() {
+    for(var i=0; i&lt;_cluster.length; i++) {
+      _clusterNodeCheck(_cluster[i]);
+    }
+  };
+  
+  var _clusterNodeCheck = function(node) {
+    var client = http.createClient(parseInt(node.port, 10), node.host);
+    var request = client.request('GET', '/is_up', {"host" : node.host});
+    
+    request.addListener('response', function (response) {
+      if(response.statusCode == 200) {
+        response.addListener('data', function(data) {
+          if(data == 'ok') {
+            node.active = true;
+          } else {
+            node.active = false;
+          }
+        });
+      } else {
+        node.active = false;
+      }
+    });
+    
+    request.addListener('error', function (err) {
+      node.active = false;
+    });
+
+    client.addListener('error', function (err) {
+      node.active = false;
+    });
+
+    request.end();
+
+    setTimeout(_updateActives, 200);
+
+    _checkTimeout[node.host + ':' + node.port] = setTimeout(function() {
+      _clusterNodeCheck(node);
+    }, _checkInterval);
+  };
+
+  var _requestHandler = function(request, response) {
+    if(_active.length == 0) {
+      response.writeHead(500, {'Content-Type': 'text/html'});
+      response.write('no server active');
+      response.end();
+    } else {
+      var index = Math.floor(Math.random()*_active.length);
+      var node = _active[index];
+
+      var proxy_headers = request.headers;
+      var proxy_client = http.createClient(parseInt(node.port, 10), node.host);
+      var proxy_request = proxy_client.request(request.method, request.url, proxy_headers);
+
+      proxy_request.addListener("response", function (proxy_response) {
+        response.writeHeader(proxy_response.statusCode, proxy_response.headers);
+    
+        proxy_response.addListener("data", function (chunk) {
+          response.write(chunk);
+        });
+    
+        proxy_response.addListener("end", function () {
+          response.end();
+        });
+      });
+
+      proxy_client.addListener("error", function (error) {
+        for(var i=0; i&lt;_cluster.length; i++) {
+          if(node.host == _cluster[i].host &amp;&amp; node.port == _cluster[i].port) {
+            sys.puts('error, deactivating: '+node.host+':'+node.port);
+            _cluster[i].active = false;
+            _updateActives();
+          }
+
+          clearTimeout(_checkTimeout[_cluster[i].host + ':' + _cluster[i].port]);
+          _clusterNodeCheck(_cluster[i]);
+        }
+
+        setTimeout(function() {
+          _requestHandler(request, response);
+        }, 200);
+      });
+  
+      proxy_request.end();    
+    }
+  };
+  
+  
+  var _run = function() {
+    _loadCluster(_checkCluster);
+
+    _server = http.createServer().
+            addListener('request', _requestHandler)
+            .listen(_port);
+    sys.puts('Listening to port ' + _port);
+  };
+
+  _run();
+};
+</code></pre>
+
+
+<h2>Config file</h2>
+
+<pre><code>
+[{
+  "host" : "127.0.0.1",
+  "port" : "8200"
+},
+{
+  "host" : "127.0.0.1",
+  "port" : "8300"
+}]
+</code></pre>
+
+
+<h2>Test Server</h2>
+
+<pre><code>
+var sys = require('sys'), 
+  http = require('http');
+var _port;
+
+function checkUsage() {
+  if(process.argv.length != 3) {
+    sys.puts('usage: node testserver.js &lt;port&gt;');
+    process.exit(1);
+  }
+
+  var port = parseInt(process.argv[2], 10);
+
+  if('NaN' == port.toString()) {
+    sys.puts('usage: node testserver.js &lt;port&gt;');
+    process.exit(1);
+  }
+  
+  _port = port;
+};
+
+var TestServer = function() {
+  var _self = this;
+  var _server;
+
+  var _routes = {
+    '/' : function(request, response) {
+      response.writeHead(200, {'Content-Type': 'text/html'});
+      response.write('hello world\n');
+      response.end();
+    },
+
+    '/is_up' : function(request, response) {
+      response.writeHead(200, {'Content-Type': 'text/plain'});
+      response.write('ok');
+      response.end();
+    },
+  }
+
+  var _requestHandler = function(request, response) {
+    sys.puts('Request '+request.url+' from '+request.connection.remoteAddress+' to '+request.headers.host);
+
+    if(_routes[request.url] === undefined) {
+      response.writeHead(404, {'Content-Type': 'text/plain'});
+      response.write('not found\n');
+      response.end();
+    } else {
+      _routes[request.url].call(this, request, response);
+    }
+  };
+  
+  var _run = function() {
+    _server = http.createServer().
+            addListener('request', _requestHandler)
+            .listen(_port);
+    sys.puts('Listening to port ' + _port);
+  };
+
+  _run();
+};
+
+checkUsage();
+server = new TestServer();
+</code></pre>
+
+<h2>Readme</h2>
+<pre><code>
+A simple load balancer in node.js
+
+
+Start testservers in seperate shells:
+
+node testserver.js 8200
+node testserver.js 8300
+                
+
+Start load balancer:
+
+node balancer.js     
+
+
+Request to balancer:
+
+curl http://127.0.0.1:8888
+</code></pre>
+

@@ -1,0 +1,61 @@
+---
+layout : post
+permalink : /content/google-web-optimiser-being-unbalanced/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Google Web Optimiser being unbalanced"
+date : "2010-05-11 11:05:38"
+dateformatted : "May 11 2010, 11:05"
+excerpt : |
+    <p>Whatever prompted <a href="http://adwords.google.com/support/aw/bin/answer.py?hl=en-uk&amp;answer=64418">Google to use an "unbalanced" noscript tag in their Web Optimiser</a>, it ain't pretty!</p> 
+categories : 
+   - May 2010
+   - "Pascal Opitz"
+---
+
+
+<p>Whatever prompted <a href="http://adwords.google.com/support/aw/bin/answer.py?hl=en-uk&amp;answer=64418">Google to use an "unbalanced" noscript tag in their Web Optimiser</a>, it ain't pretty!</p> 
+
+<p>The problem is not just Web Optimiser, but also other tools like Analytics. The whole "generate me a code snippet to paste" approach leaves many many otherwise neatly coded littered with inline script blocks. While this is a quick and easy way for people to get stuff working in their WP blog, at least there should be a neat and valid alternative for experienced developers.</p>
+
+<p>Why Google don't try to create cleaner ways to include their tools, is completely beyond me. They really have loads of skilled people at hand, so resource can't be a problem, can it?</p>
+
+<p>Below is their generated Analytics code, vs my take on it the encapsulated way.</p>
+
+<pre><code>
+&lt;script type="text/javascript"&gt;
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+try{
+var pageTracker = _gat._getTracker("UA-xxxxxx-x");
+pageTracker._trackPageview();
+} catch(err) {}&lt;/script&gt;
+</code></pre>
+
+<pre><code>
+CWS.GoogleAnalytics = new function() {
+  this.NS = 'CWS.GoogleAnalytics';
+  var _t = 200;
+  
+  var _checkTracker = function() {
+    if(window._gat !== undefined) {
+        try {
+          var pageTracker = window._gat._getTracker("UA-XXXXXXX-X");
+          pageTracker._trackPageview();
+        } catch(err) {}
+    } else {
+      window.setTimeout(_checkTracker, _t);      
+    }
+  }
+  
+  var gaJsHost = (("https:" == document.location.protocol) ? 'https://ssl.' : 'http://www.');
+  var str = unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E");
+  $('body').append(str);
+
+  window.setTimeout(_checkTracker, _t);
+};
+</code></pre>
+
+<p>However, that doesn't solve the problem of Google Web Optimiser insisting on an "unbalanced" noscript tag. For all those people that use XML parsers or send their content as application/xhtml+xml, this is a big nono. Poor show, Google!</p>

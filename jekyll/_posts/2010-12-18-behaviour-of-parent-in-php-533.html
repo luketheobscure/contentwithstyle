@@ -1,0 +1,65 @@
+---
+layout : post
+permalink : /content/behaviour-of-parent-in-php-533/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "buggy behaviour of parent:: in PHP 5.3.3"
+date : "2010-12-18 18:26:09"
+dateformatted : "December 18 2010, 18:26"
+excerpt : |
+    <p>upgrade PHP (or be very careful!) when using parent:: in combination with the __call and __callStatic magic methods, you might expect it to work differently.</p>
+categories : 
+   - December 2010
+   - "Matthias Willerich"
+---
+
+<p>So, this app I hadn't been looking at in a few months did not work at all. I traced the bug down to a method that itself called a parent method. The parent only contains __call and __callStatic methods, and for some reason __callStatic was called, although the class it was called from was an object instance.</p>
+<p>To isolate the case I used the code example <a href="http://www.php.net/manual/en/language.oop5.overloading.php#language.oop5.overloading.methods">provided in the PHP manual</a>, extended it and ooo'd and ahh'd at the result.</p>
+<pre>
+&lt;?php
+class MethodTest {
+    public function __call($name, $arguments) {
+        // Note: value of $name is case sensitive.
+        echo &quot;Calling object method &#x27;$name&#x27; &quot;
+             . implode(&#x27;, &#x27;, $arguments). &quot;\n&quot;;
+    }
+    
+    public static function __callStatic($name, $arguments) {
+        // Note: value of $name is case sensitive.
+        echo &quot;Calling static method &#x27;$name&#x27; &quot;
+             . implode(&#x27;, &#x27;, $arguments). &quot;\n&quot;;
+    }
+}
+
+class MethodTestExtended extends MethodTest {
+    public function runExtendedTest($var){
+        parent::runTest($var);
+    }
+}
+
+$obj = new MethodTest;
+$obj-&gt;runTest(&#x27;in object context&#x27;);
+//Calling object method &#x27;runTest&#x27; in object context
+MethodTest::runTest(&#x27;in static context&#x27;);
+//Calling static method &#x27;runTest&#x27; in static context
+
+$obj = new MethodTestExtended;
+$obj-&gt;runTest(&#x27;in object context&#x27;);
+//Calling object method &#x27;runTest&#x27; in object context
+MethodTestExtended::runTest(&#x27;in static context&#x27;);
+//Calling static method &#x27;runTest&#x27; in static context
+
+$obj = new MethodTestExtended;
+$obj-&gt;runExtendedTest(&#x27;in object context&#x27;);
+// PHP 5.3.3: Calling object method &#x27;runTest&#x27; in static context
+// __callStatic is called, and $this is not available.
+// PHP 5.3.4: Calling object method &#x27;runTest&#x27; in object context
+// __call is called, and $this is available.
+MethodTestExtended::runExtendedTest(&#x27;in static context&#x27;);
+//Calling static method &#x27;runTest&#x27; in static context, with a 
+//Strict Standards warning, though (as the method isn&#x27;t declared static)
+
+</pre>
+<p>The call is always routed via __callStatic, when called from within the extending class, regardless if it's in a static or object context, but not so when called directly.</p>
+<p>Not believing my eyes, I started searching more creatively, and found that I was not the only one complaining about it; and luckily <a href="http://www.serverphorums.com/read.php?7,220473">the right people thought so, too</a>.</p>
+<p>It so turns out that this behaviour was introduced in PHP 5.3.3, as part of another <a href="http://bugs.php.net/51176">bug dealing with the opposite desired behaviour</a> (calling class methods statically when in an object context), and removed again in PHP 5.3.4, smelling <a href="http://bugs.php.net/52713">a little bit like a bug</a>. A simple sudo port upgrade php5 did the job, bumping my install up to 5.3.4, and everything worked as intended. Yay!</p>

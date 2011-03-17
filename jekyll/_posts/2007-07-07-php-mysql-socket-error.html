@@ -1,0 +1,39 @@
+---
+layout : post
+permalink : /content/php-mysql-socket-error/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "PHP &#38; Mysql socket error"
+date : "2007-07-07 19:58:36"
+dateformatted : "July 7 2007, 19:58"
+excerpt : |
+    <p>I keep coming across this whenever I set up MySQL and PHP on a mac: mysql_connect() fails throwing an error &hellip;</p>
+categories : 
+   - July 2007
+   - "Pascal Opitz"
+---
+
+	<p>I keep coming across this whenever I set up MySQL and PHP on a new mac: mysql_connect() fails throwing an error &#8230;</p>
+
+<pre><code> mysql_connect() [function.mysql-connect]: Can't connect to local 
+MySQL server through socket '/var/mysql/mysql.sock'</code></pre>
+
+	<p>And everytime I forget to remember what the solution was:<br />
+This can be fixed by changing settings in /etc/php.ini:</p>
+
+<pre><code>
+sudo cp /etc/php.ini.default /etc/php.ini
+sudo vim /etc/php.ini
+</code></pre>
+
+	<p>Then set the mysql default socket to the temp folder:</p>
+
+<pre><code>
+mysql.default_socket = /tmp/mysql.sock
+</code></pre>
+
+	<p>Quite annoying, but then again: Hey, I&#8217;ve got a new Mac!!!</p>
+
+
+
+ 

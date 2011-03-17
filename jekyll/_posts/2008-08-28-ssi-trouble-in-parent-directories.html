@@ -1,0 +1,25 @@
+---
+layout : post
+permalink : /content/ssi-trouble-in-parent-directories/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "SSI trouble in parent directories"
+date : "2008-08-28 10:32:15"
+dateformatted : "August 28 2008, 10:32"
+excerpt : |
+    <p>Sometimes it helps to read the manual, especially when one makes a really silly mistake.</p>
+categories : 
+   - August 2008
+   - "Pascal Opitz"
+---
+
+	<p>Sometimes it helps to read the manual, especially when one makes a really silly mistake.</p>
+
+	<p>For example today I tried to figure out which permission prevented my SSI based pages to work if the include file was to sit in the parent directory.</p>
+
+	<p>Of course, when one reads a <a href="http://russell.dyerhouse.com/cgi-bin/article.cgi?article_id=84">manual</a> and looks for &#8220;relative paths&#8221; one will find that there is the &#8220;file&#8221; attribute in the include statement which resolves system paths, but also there is the &#8220;virtual&#8221; attribute which resolves relative paths. DOH!</p>
+
+	<p>P.S.: Classic example for &#8220;Dealt with a problem many times but always keep forgetting the solution&#8221; ...</p>
+
+
+ 

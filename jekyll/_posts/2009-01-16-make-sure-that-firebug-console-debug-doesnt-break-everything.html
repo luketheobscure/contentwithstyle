@@ -1,0 +1,87 @@
+---
+layout : post
+permalink : /content/make-sure-that-firebug-console-debug-doesnt-break-everything/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Make sure firebug console debug doesn't break everything."
+date : "2009-01-16 14:49:49"
+dateformatted : "January 16 2009, 14:49"
+excerpt : |
+    <p>Maybe some of you have already had problems with leaving debug statements in JS code. A <code>console.log()</code> left in the deployed code can break the whole application, and it might only come up when someone without firebug is testing it at a later stage.</p>
+categories : 
+   - January 2009
+   - "Pascal Opitz"
+---
+
+<p>Maybe some of you have already had problems with leaving debug statements in JS code. A <code>console.log()</code> left in the deployed code can break the whole application, and it might only come up when someone without firebug is testing it at a later stage.</p>
+
+<p>Very embarrassing indeed, and I recall a story where the whole development team had neglected to test without firebug, but a scheduled session of Acceptance Tests held at a different site was about to fail. Someone then had to rush there and managed to save the day by installing firebug on the test machine, so that they could get on with it. This taught me a valuable lesson about what can happen in an environment where there are many developers: <strong>Mistakes WILL happen!</strong></p>
+
+<p>
+People that do flash will know the <code>trace()</code> function, which gives you debug output, but can be turned off in the export settings, so that the compiler removes those calls from the generated SWF.
+<br /> 
+But javascript isn't a compiled language so there is no auto removal of debug specific code.
+<br />
+This is why we have to ensure that, even though code does still contain debug code, it shouldn't break. For javascript development this means that at least console.log and console.dir statements need to be dealt with. And yes, I agree: It shouldn't be in there in the first place. But we have to either make sure that calls to the console get removed or that the rest of the javascript application isn't affected when they're made.
+</p>
+
+<h2>Suggestions</h2>
+
+<h3>Version control hooks</h3>
+
+<p>
+CVS, SVN or GIT offer hooks. I haven't tried this out properly, but I imagine a simple shell script could help. Like doing a <em>grep</em> for console.log and stopping the commit if there's anything in there that should only be debug code.
+<br />
+Of course with this method the downside would be that there would be no means to share the debugging code with other developers through the version control.
+</p>
+
+<h3>Build tools</h3>
+
+<p>
+A similar check/removal process could be done in the deployment stage.
+Using <em>grep</em>, <em>sed</em> or something similar on the project files to remove any debug related code would ensure that the javascript always gets deployed without debug code.
+</p>
+
+<h3>A mock object</h3>
+
+<p>We could provide a mock object, so that calls to the console wouldn't result in an error. This would ensure that the javascript doesn't fail, even though debug code is still in the code.</p>
+
+<pre><code>
+if(!window.console) {
+  window.console = new function() {
+    this.log = function(str) {};
+    this.dir = function(str) {};
+  };
+}
+</code></pre>
+
+<h3>Wrapping the debug code</h3>
+
+<p>Another valid approach would be to wrap the calls to console.log, and provide error checking or try-catch inside the wrapper.
+<br /> 
+Of course this only works if all developers will use the wrapper instead of the firebug console object.
+</p>
+
+
+<pre><code>
+var Logger = new function() {
+  this.log = function(str) {
+    try {
+      console.log(str);
+    } catch(e) {
+      // do nothing
+    }
+  };
+};
+</code></pre>
+
+<h2>Finally ...</h2>
+
+<p>Please keep in mind that what I've written is about keeping code from breaking the testing or staging environment. The truth is that, if there is anything that breaks the App in it's live deployment, then something is wrong with the testing process.</p>
+
+<h2>Related links</h2>
+<ul>
+<li><a href="http://ajax-prototype.blogspot.com/2006/12/workaround-to-make-firebug-consolelog.html">Workaround to make firebug console.log function bug free on IE</a></li>
+<li><a href="http://www.jennyandlih.com/resolved-logging-firebug-console-breaks-ie">jennyandlih on firebug console and IE</a></li>
+<li><a href="http://wordaligned.org/articles/a-subversion-pre-commit-hook">A subversion pre commit hook</a></li>
+</ul>

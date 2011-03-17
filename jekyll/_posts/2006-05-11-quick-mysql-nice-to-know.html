@@ -1,0 +1,30 @@
+---
+layout : post
+permalink : /content/quick-mysql-nice-to-know/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "quick MySQL nice-to-know"
+date : "2006-05-11 07:41:03"
+dateformatted : "May 11 2006, 07:41"
+excerpt : |
+    <p>some basic thoughts around how I&rsquo;m using MySQL. I just found the manual, it seems.</p>
+categories : 
+   - May 2006
+   - "Matthias Willerich"
+---
+
+	<p>While dealing with a project at work, I came across a couple of database issues that you all probably already know. A standard case of RTFM (by the way, nice <a href="http://www.gotapi.com/">reference lookup service here</a> ). Nevertheless, as I never seemed to bother using them, I&#8217;m sure there&#8217;s some of you out there that&#8217;ll find this helpful. And, er, others will probably see this as an embarrassment of mine.</p>
+
+	<p>First: It&#8217;s proven: <a href="http://experts.about.com/q/MySQL-3296/inner-join.htm">INNER JOINs are more effective than cartesian products</a> . I never liked this way of abbrevating INNER JOINs, so I got suspicious and looked for a good reason not to do it. Although the explanation for it is very straight forward, I&#8217;m surprised that MySQL doesn&#8217;t optimize or translate this internally.</p>
+
+	<p>Then: I have a scenario where I&#8217;m working with primary and secondary keys, and I will more often than not insert 2 rows with the same ID and different secondary key(same content, 2 languages). In order to avoid checking for an item, then updating it, I first thought of using mysql_affected_rows() on an UPDATE. But this will return 0 if no changes were made, as well as if there was no row matching the filter. <br />
+Then I found <a href="http://dev.mysql.com/doc/refman/4.1/en/insert-on-duplicate.html">INSERT&#8230;ON DUPLICATE KEY UPDATE</a> but sadly I&#8217;m stuck with MySQL 4.0. The solution came around in the form of <a href="http://dev.mysql.com/doc/refman/4.1/en/replace.html">REPLACE</a> .</p>
+
+	<p>Oh so simple. It&#8217;s an INSERT, and if the row is already there, it&#8217;s gonna be UPDATEd. As I already have the ID from a referencing table, I can merge INSERT and UPDATE for follow up items in other languages than the default one into one REPLACE statement.</p>
+
+	<p>Also: Why did I always have an ID in my joint tables? stupid. In most cases it will be enough to have both foreign keys as a combined primary key.</p>
+
+	<p>Is everyone using this? Is it working as I expect it to work? Am I gonna run into trouble with this further down the line? Time (and maybe one or the other comment) will tell.</p>
+
+
+ 

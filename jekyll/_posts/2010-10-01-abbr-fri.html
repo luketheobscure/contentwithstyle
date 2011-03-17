@@ -1,0 +1,41 @@
+---
+layout : post
+permalink : /content/abbr-fri/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "abbr. Fri"
+date : "2010-10-01 12:33:41"
+dateformatted : "October 1 2010, 12:33"
+excerpt : |
+    <p>Some Friday fun that will make your code shorter and more questionable.</p>
+categories : 
+   - October 2010
+   - "Matthias Willerich"
+---
+
+<p>This is not at all from us, but from my colleague Andrew, who showed them to me last Friday in Perl.</p>
+
+<p>I am not sure if I would use either of those in production code, it's... slightly cheeky. Nevertheless, enjoy:</p>
+<pre>
+&lt;?php
+//turn anything into a boolean
+$boolean_flag = <strong>!!</strong> $any_variable;
+//does the same as
+$boolean_flag = (bool) $any_variable;
+</pre>
+<p>I like the importance the double exclamation marks trigger when you read this in code. IT'S LIKE WHEN PEOPLE WRITE MUNDANE STUFF IN CAPS!!</p>
+<pre>
+&lt;?php
+//I'm clearly iterating towards 0
+$counter = 100;
+while($counter<strong>--&gt;</strong>0) {
+	//do stuff
+}
+//does the same as
+$counter = 100;
+while($counter &gt; 0) {
+	$counter--;
+	//do stuff
+}
+</pre>
+<p>This one's great, too. The arrow seems to make the loop a very dynamic element. Great, have I really just explained my joke post? Shocking, I must get out more. If you've been inside for too long, let me know what unusual syntax you've come across.</p>

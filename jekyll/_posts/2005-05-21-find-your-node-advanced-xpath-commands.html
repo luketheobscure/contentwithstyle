@@ -1,0 +1,194 @@
+---
+layout : post
+permalink : /content/find-your-node-advanced-xpath-commands/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Find your node: Advanced XPATH commands"
+date : "2005-05-21 11:49:00"
+dateformatted : "May 21 2005, 11:49"
+excerpt : |
+    <p>All that XSLT does is applying code-templates on XML-nodes. In order to do this you need to find the right node.
+    XPATH offers you an advanced toolkit to do that within an XSL-file.</p>
+categories : 
+   - May 2005
+   - "Pascal Opitz"
+---
+
+<h2>XSLT and XPATH?</h2>
+
+<p>
+	All that XSLT does is applying code-templates on XML-nodes. In order to do this you need to find the right node.
+	XPATH offers you an advanced toolkit to do that within an XSL-file.
+</p>
+
+<h2>Go dynamic</h2>
+
+<p>
+	XPATH and XSLT offer you dynamic features that remind more of a scripting-language rather than a stylesheet language, 
+	but keep in mind that all you can do is transforming the data you've got, so on a more abstract level it is 
+	still just styling up the content, just that this time you can choose what to display triggered with variables and
+	control-structures.
+</p>
+
+<h3>Locations in XPATH</h3>
+
+<p>
+	Let's have a look into a simple, concatinated XML structure:
+</p>
+
+<pre>
+&lt;root&gt;
+  &lt;node&gt;
+    &lt;subnode /&gt;
+    &lt;subnode /&gt;
+    &lt;subnode /&gt;
+  &lt;/node&gt;
+  &lt;node&gt;
+    &lt;subnode&gt;
+      &lt;subsubnode /&gt;
+    &lt;/subnode&gt;
+  &lt;/node&gt;
+&lt;/root&gt;
+</pre>
+
+<p>
+	In order to navigate between the nodes you'll need to use Location Path Expressions.
+	The basic ones work pretty much the same like in an operating-system enviroment.
+	<code class="inline">/node/subnode</code> for example would be the absolute path to all subnodes in the example above.
+	<br />
+	On top of that XPATH offers you differnet types of axes like <code class="inline">ancestor</code>, <code class="inline">parent</code> or
+	<code class="inline">child</code>. Even attributes can be selected with <code class="inline">attribute</code> or you can use <code class="inline">*</code> as a wildcard.
+	<br />
+	<br />
+	A full reference can be found at at <a href="http://www.w3schools.com/xpath/xpath_location.asp">w3schools</a>.
+</p>
+
+<h3>Node-tests</h3>
+
+<p>
+	On top of these axes you can test nodes against expressions that most of you might know as operators when 
+	using scripting- or programming-languages.
+	<br />
+	There are expressions like <code class="inline">+</code>, <code class="inline">-</code> but also relational ones like <code class="inline">=</code>, <code class="inline">&gt;</code> and
+	<code class="inline">!=</code>.
+	Keep in mind that within valid XML <code class="inline">&gt;</code> and <code class="inline">&lt;</code> need to be escaped as <code class="inline">&amp;gt;</code> and <code class="inline">&amp;lt;</code>.
+</p>
+
+<h3>Functions in XPATH</h3>
+
+<p>
+	For those that already used basic XSLT functionallity the functions won't be new, either.
+ 	The function <code class="inline">current()</code> for example gives back the node that you are in now, maybe while within a loop.
+	<br />
+	But there is also string-functions like <code class="inline">contains()</code> or <code class="inline">substring()</code>. 
+	Those can be used to manipulate the data that you will use for outputting data or locating nodes.
+	<br />
+	<br />
+	Again, find a full list of XPATH functions at <a href="http://www.w3schools.com/xpath/xpath_functions.asp">w3schools</a>.
+</p>
+
+<h3>Combine them!</h3>
+
+<p>
+	Now you can combine the location path, the axes and the node tests to get the node you really want. The syntax is <code class="inline">axisname::nodetest[predicate]</code>.
+	<br />
+	I'll fit everything in one expression and you'll immediatly figure what I mean:
+	<br />
+	<br />
+	<code class="inline">current()/child::*[attribute::type='classic']</code>
+	<br />
+	<br />
+	This expression selects all subnodes of the child-elements within the current node, that have the attribute type with the value 'classic'.
+</p>
+
+<h2>An example please!</h2>
+
+<p>
+	I know, that was pretty abstract, but now we'll move straight on to the practical example.
+	We will use dynamic XPATH expressions to display a node-set, remember that when using server side techniques
+	or client-side scripting this also could be triggered by a variable.<br />
+	Let's have a look at the piece of XML that will be transformed.
+</p>
+
+
+<pre>
+&lt;?xml version="1.0" ?&gt;
+&lt;company_list&gt;
+  &lt;company country="uk"&gt;
+    &lt;name&gt;Company 1&lt;/name&gt;
+    &lt;sales&gt;3200900&lt;/sales&gt;
+    &lt;employees&gt;250&lt;/employees&gt;
+  &lt;/company&gt;
+  &lt;company country="usa"&gt;
+    &lt;name&gt;4th capitalist&lt;/name&gt;
+    &lt;sales&gt;102310000&lt;/sales&gt;
+    &lt;employees&gt;3050&lt;/employees&gt;
+  &lt;/company&gt;
+
+....
+
+  &lt;company country="uk"&gt;
+    &lt;name&gt;UK stores&lt;/name&gt;
+    &lt;sales&gt;12300000&lt;/sales&gt;
+    &lt;employees&gt;3301&lt;/employees&gt;
+  &lt;/company&gt;
+  &lt;company country="uk"&gt;
+    &lt;name&gt;THEUSTOYSTORES&lt;/name&gt;
+    &lt;sales&gt;22200000&lt;/sales&gt;
+    &lt;employees&gt;18639&lt;/employees&gt;
+  &lt;/company&gt;
+&lt;/company_list&gt;	
+</pre>
+
+<p>
+	What we're going to do now is to find out the top 3 in the UK
+	regarding the ration of employees and sales.
+	<br />
+	Let's have a look at the XSL file:
+</p>
+
+
+<pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;xsl:stylesheet version="1.0" 
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform"&gt; 
+  &lt;xsl:template match="/company_list"&gt;
+  &lt;html&gt;
+    &lt;body style="font-family: Arial"&gt;
+      &lt;h1&gt;Top 3 stores in the uk regarding employees per sales&lt;/h1&gt;
+      &lt;ul&gt;
+        &lt;xsl:for-each select="company[@country = 'uk']"&gt;
+        &lt;xsl:sort select="sales div employees"/&gt;
+          &lt;xsl:if test="position() &lt; 4"&gt;
+            &lt;li&gt;
+              Company: &lt;xsl:value-of select="name" /&gt;
+              &lt;br /&gt;
+              Employees: &lt;xsl:value-of select="employees" /&gt;
+              &lt;br /&gt;
+              Sales: &lt;xsl:value-of select="sales" /&gt;
+            &lt;/li&gt;
+          &lt;/xsl:if&gt;  
+        &lt;/xsl:for-each&gt;
+      &lt;/ul&gt;    
+    &lt;/body&gt;
+  &lt;/html&gt;
+  &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;
+</pre>
+
+<p>
+	Download the files here:
+	<br />
+	<a href="/resources/advanced_xpath/company_list.xml">company_list.xml</a>
+	<br />
+	<a href="/resources/advanced_xpath/uk_top3.xsl">uk_top3.xsl</a>
+</p>
+
+
+<h2>Conclusion</h2>
+
+<p>
+	That wasn't bad, but now imagine what you could do when you have dynamic variables.
+	Especially with the MSXML toolkit or Sarissa that have the method selectSingleNode()
+	these expressions are a piece of cake.
+</p>

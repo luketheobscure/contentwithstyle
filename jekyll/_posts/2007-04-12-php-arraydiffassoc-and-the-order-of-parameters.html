@@ -1,0 +1,61 @@
+---
+layout : post
+permalink : /content/php-arraydiffassoc-and-the-order-of-parameters/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "php: array_diff_assoc and the order of parameters"
+date : "2007-04-12 03:55:51"
+dateformatted : "April 12 2007, 03:55"
+excerpt : |
+    <p>This took a while till I found out: They actually do matter!
+    Even worse: The manual says so!!!! Just that I was to stupid to read it.
+    Lesson learned. No more guessing, no more quick reading! 
+    </p>
+categories : 
+   - April 2007
+   - "Pascal Opitz"
+---
+
+<p>
+This took a while till I found out: They actually do matter!
+<br />
+Even worse: The manual says so!!!! Just that I was to stupid to read it.
+<br />
+Lesson learned. No more guessing, no more quick reading! 
+</p>
+
+<pre><code>
+&lt;?
+$a = array(
+    'x' => 'x',
+    'y' => 'y',
+    'z' => 'z',
+    't' => 't',
+);
+
+$b = array(
+    'x' => 'x',
+    'y' => 'y',
+    'z' => 'z',
+    't' => 't',
+    'g' => 'g',
+);
+
+print_r(array_diff_assoc($a, $b));
+print_r(array_diff_assoc($b, $a));
+?&gt;
+</code></pre>
+
+<p>
+This will output:
+</p>
+
+<pre><code>
+Array
+(
+)
+Array
+(
+    [g] => g
+)
+</code></pre>

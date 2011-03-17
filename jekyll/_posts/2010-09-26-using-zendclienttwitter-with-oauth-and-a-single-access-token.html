@@ -1,0 +1,54 @@
+---
+layout : post
+permalink : /content/using-zendclienttwitter-with-oauth-and-a-single-access-token/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Zend_Client_Twitter with OAuth and a single access token"
+date : "2010-09-26 16:26:11"
+dateformatted : "September 26 2010, 16:26"
+excerpt : |
+    <p>Just noticed that twitter switched their API to OAuth only, which broke our blog updates on twitter. Here's a hotfix to use the <a href="http://dev.twitter.com/pages/oauth_single_token">single access token provided by Twitter</a>.</p>
+categories : 
+   - September 2010
+   - "Pascal Opitz"
+---
+
+<p>Just noticed that twitter switched their API to OAuth only, which broke our blog updates on twitter. Here's a hotfix to use the <a href="http://dev.twitter.com/pages/oauth_single_token">single access token provided by Twitter</a>.</p>
+
+<h2>Config</h2>
+
+<p>Of course you'll have to get the right data from <a href="http://dev.twitter.com/apps">dev.twitter.com</a>.</p>
+
+<pre><code>
+twitter.user = "myusername"
+twitter.consumer_key = "xxxxxx"
+twitter.consumer_secret = "yyyyyy"
+twitter.access_token = "XXXXXX"
+twitter.access_secret = "YYYYYY"
+</code></pre>
+
+<h2>Code</h2>
+
+<pre><code>
+$message = "my update";
+
+$token = new Zend_Oauth_Token_Access();
+$token-&gt;setToken($this-&gt;config-&gt;twitter-&gt;access_token);
+$token-&gt;setTokenSecret($this-&gt;config-&gt;twitter-&gt;access_secret);
+
+$twitter_client = $token-&gt;getHttpClient(array(
+    'callbackUrl' =&gt; 'http://example.com/callback.php',
+    'siteUrl' =&gt; 'http://twitter.com/oauth',
+    'consumerKey' =&gt; $this-&gt;config-&gt;twitter-&gt;consumer_key,
+    'consumerSecret' =&gt; $this-&gt;config-&gt;twitter-&gt;consumer_secret,
+));
+
+$twitter = new Zend_Service_Twitter(array(
+    'username' =&gt; $this-&gt;config-&gt;twitter-&gt;user,
+    'accessToken' =&gt; $token,
+));
+
+$twitter-&gt;setLocalHttpClient($twitter_client);
+$response = $twitter-&gt;account-&gt;verifyCredentials();
+$twitter-&gt;status-&gt;update($message);
+</code></pre>

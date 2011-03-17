@@ -1,0 +1,113 @@
+---
+layout : post
+permalink : /content/a-caching-pattern-for-models/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "A caching pattern for models"
+date : "2009-04-06 11:50:07"
+dateformatted : "April 6 2009, 11:50"
+excerpt : |
+    <p>This is a caching pattern for models using Zend_Cache and the __call magic method.</p>
+categories : 
+   - April 2009
+   - "Pascal Opitz"
+---
+
+<p>This is a caching pattern for models using Zend_Cache and the __call magic method.</p>
+
+<h2>The Basic Idea</h2>
+
+<p>
+The initial thought behind this is that a model should be able to return calls either uncached or cached, without initializing some cache object every time. It should be easy to switch between the two calls, and the cache should be coming with the model object already.
+</p>
+
+<h3>The old way</h3>
+
+<p>
+Before introducing the cache pattern, I would create an object that then would use Zend_Cache_Frontend_Class, then initialize a new instance of my model in there, then redefine a method that acts as somewhat like a proxy, but uses the cache.
+And if that wasn't enough, I'd have to initialize them both, like in this example:
+</p>
+
+<pre><code>
+$model = MyModel();
+$model_cached = MyModelCached();
+
+$values_direct = $model-&gt;doStuff();
+$values_cached = $model_cached-&gt;doStuff();
+</code></pre>
+
+<h3>The new way</h3>
+
+<p>
+So Matthias asked me: Would it not be nicer if the cache was already available in the model, and you could do something like this:
+</p>
+
+<pre><code>
+$model = MyModel();
+$values_direct = $model-&gt;doStuff();
+$values_cached = $model-&gt;cache-&gt;doStuff();
+</code></pre>
+
+<p>
+A great idea. As you can see this proposed way saves a bit of code, it's intuitive and easy to change, if you ever need to switch between cached and non-cached calls.
+</p>
+
+<h2>The Code</h2>
+
+<p>First we need to create an object that initializes the cache. We'll initialize a cache with Zend_Cache and then utilize the __call function to check whether a call exists in the cached object or not. This enables us to only do valid calls.</p>
+
+<pre><code>
+class BaseModelCache {
+  private $object;
+  private $cache;
+  
+  public function __construct($object) {
+    $backendName = 'File';
+    $frontendName = 'Class';
+
+    $frontendOptions = array(
+      'lifetime' =&gt; 1800,
+    );
+
+    $backendOptions = array(
+      'cache_dir' =&gt; '/my/cache/dir/',
+    );
+
+    $this-&gt;object = $object;
+    $frontendOptions['cached_entity'] = $object;
+
+    try {
+      Zend_Loader::loadClass('Zend_Cache');
+      $this-&gt;cache = Zend_Cache::factory($frontendName, $backendName, $frontendOptions, $backendOptions);     
+    } catch(Exception $e) {
+      throw($e);
+    }
+  }
+  
+  public function __call($method, $args) {
+    $class = get_class($this-&gt;object);
+    $class_methods = get_class_methods($class);
+
+    if(in_array($method , $class_methods)) {
+        $caller = Array($this-&gt;cache, $method);
+        return call_user_func_array($caller, $args);
+    }
+
+    throw new Exception( " Method " . $method . " does not exist in this class " . get_class($class ) . "." );
+  }
+}
+</code></pre>
+
+<p>The second step is to create a base model class, that we'll use for all our models. It will initialize the cache object using the BaseModelCache and make it available as public property:</p>
+
+<pre><code>
+abstract class BaseModel {
+  public $cache;
+
+  public function __construct() {
+    $this-&gt;cache = new BaseModelCache($this);
+  }
+}
+</code></pre>
+
+<p>Et Voilà! Now we can create models by extending the BaseModel. The cache will be available as described above.</p>

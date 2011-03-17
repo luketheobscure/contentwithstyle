@@ -1,0 +1,19 @@
+---
+layout : post
+permalink : /content/dns-clustering-in-whmcpanel-accounts/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "DNS clustering in WHM/Cpanel accounts"
+date : "2008-11-01 16:00:10"
+dateformatted : "November 1 2008, 16:00"
+excerpt : |
+    <p>Dealing with multiple CPANEL/WHM installs, DNS clustering is a way to use redundant nameservers in order to keep your zones created by CPANEL/WHM in sync.</p>
+categories : 
+   - November 2008
+   - "Pascal Opitz"
+---
+
+<p>Dealing with multiple CPANEL/WHM installs, DNS clustering is a way
+to use redundant nameservers in order to keep your zones created by
+CPANEL/WHM in sync.</p><p>In order to set it up, you need to go into "Cluster/Remote Access &gt;&gt; Configure Cluster" and check the radio button "Enable Dns Clustering". Then you have to add the remote servers and establish a trust relationship between the remote and the local server, by storing an authorization key.</p><p>Also, you have to make sure that the DNS role is set to "Synchronize changes".</p>
+<p>Do this on every installation that should be able to receive upodates from other DNS servers.</p><p>Once this is done, you might have to restart the BIND installations. Now you should be able to create an account or modify a DNS zone and afterwards synchronize the servers with the functions found in "<span>DNS Functions</span>&nbsp;&gt;&gt;&nbsp;<span>Synchronize DNS Records</span>".</p><p>If all zones are available on both servers, you will now be able to use nameservers on both installations as DNS entries for your domains.</p><p>The process with screenshots is described in the <a href="http://www.cpanel.net/docs/dnsclustering-quickstart/">CPANEL dns clustering quickstart guide</a>.</p><p></p>

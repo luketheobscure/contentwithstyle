@@ -1,0 +1,135 @@
+---
+layout : post
+permalink : /content/buffalo-nas-and-itunes---a-weekend-of-nerding-away/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Buffalo NAS and iTunes - A weekend of nerding away"
+date : "2010-09-26 15:26:49"
+dateformatted : "September 26 2010, 15:26"
+excerpt : |
+    <p>Thank you Apple, for <a href="http://discussions.apple.com/thread.jspa?threadID=2564925&amp;tstart=0">messing up the compatibility between iTunes 10 and any NAS drive</a> using <a href="http://www.fireflymediaserver.org/">firefly</a>. You officially suck.</p>
+    
+    <p>That said, there's no such thing as giving up, and here I am, coming up with an elaborate way to be able to listen to my music again.</p>
+categories : 
+   - September 2010
+   - "Pascal Opitz"
+---
+
+<p>Thank you Apple, for <a href="http://discussions.apple.com/thread.jspa?threadID=2564925&amp;tstart=0">messing up the compatibility between iTunes 10 and any NAS drive</a> using <a href="http://www.fireflymediaserver.org/">firefly</a>. You officially suck.</p>
+
+<p>That said, there's no such thing as giving up, and here I am, coming up with an elaborate way to be able to listen to my music again.</p>
+
+<h2>Firefly broken</h2>
+
+<p>So firely doesn't get recognised by iTunes 10 anymore. What a bummer! Until now I had all the music on a NAS drive, and streamed it to itunes on my Mac MINI which is acting as TV (using an Elgato EyeTV USB thingy) and stereo.</p>
+
+<p>There seems to be zero alternatives when it comes to DAAP players, apart from Songbird with a flaky plugin. Not my weapon of choice, really, especially because a search or scrolling or anything else makes Songbird hang for what feels like a minute.</p>
+
+<p>Bottom line was that I went and bought a hard drive to wire up to the Mac Mini, and used rsync to copy all music on to that.</p>
+
+<pre><code>
+rsync -azv -e ssh user@nasdrive:/mnt/disk1/itunes /Volumes/NewHD/
+</code></pre>
+
+<h2>Adding to the iTunes library</h2>
+
+<p>The next problem is that just because files are on the hard drive, iTunes doesn't necessarily know about them. Normally we drag and drop them in. With an automatically synced library is not an option. Apple script to the rescue. Make sure that you disable the options "Keep iTunes media folder organized" and "Copy files to iTunes media folder when adding to library" in the iTunes preferences, or this will really cause havoc.</p> 
+<p><img src="/resources/itunes_prefs.jpg" alt="" /></p>
+<p>Once you've done that though, adding a file twice should just ignore it, therefore there is no risk in running this script multiple times.</p>
+
+<pre><code>
+-- filename: /Users/tvmini/Desktop/itunes.scpt
+property type_list : {"MPG3", "MIDI", "AIFF", "MPG4"}
+property extension_list : {"mp3", "mid", "aif", "m4p", "m4a"}
+
+on run
+    scan_folder("NewHD:itunes:")
+end run
+
+on scan_folder(file_item)
+    set folder_items to list folder file_item without invisibles
+    repeat with i from 1 to the count of folder_items
+        set this_item to alias ((file_item as text) &amp; (item i of folder_items as text))
+        set item_info to info for this_item
+        if folder of the item_info is true then
+            scan_folder(this_item)
+        else if (alias of the item_info is false) and ¬
+        ((the file type of the item_info is in the type_list) or ¬
+        the name extension of the item_info is in the extension_list) then
+            check_file(this_item)
+        end if
+    end repeat    
+end scan_folder
+
+on check_file(file_item)
+    try
+        tell application "iTunes"
+            launch
+            set this_track to add file_item to playlist "Library" of source "Library"
+        end tell
+    end try
+end check_file    
+</code></pre>
+
+<p>This script was inspired by <a href="http://dougscripts.com/itunes/scripts/ss.php?sp=addtolib">this one at dougscripts.com</a>.</p> 
+
+<h2>The Flac problem</h2>
+
+<p>Firefly was kind of neat, as it also managed to automatically transcode FLAC files into an MP3 stream. With this function gone, I am using a shell script to transcode the files:</p>
+
+<pre><code>
+#!/bin/sh
+# filename: /Users/tvmini/Desktop/flac2mp3.sh
+
+if [ "$1" ]
+then
+    find "$1" -name '*.flac' | while read fn;
+    do
+        basename=$(basename "$fn" .flac).mp3
+        dirname=$(dirname "$fn")
+        
+        outfile="$dirname/$basename"
+        
+        if [ -e "$fn" ] &amp;&amp; [ ! -e "$outfile" ];
+        then
+            id3title=$(metaflac --show-tag=TITLE "$fn" | perl -pe "s/^TITLE=(.*)/\$1/i")
+            id3artist=$(metaflac --show-tag=ARTIST "$fn" | perl -pe "s/^ARTIST=(.*)/\$1/i")
+            id3album=$(metaflac --show-tag=ALBUM "$fn" | perl -pe "s/^ALBUM=(.*)/\$1/i")
+            id3date=$(metaflac --show-tag=DATE "$fn" | perl -pe "s/^DATE=(.*)/\$1/i")
+            id3tracknumber=$(metaflac --show-tag=TRACKNUMBER "$fn" | perl -pe "s/^TRACKNUMBER=(.*)/\$1/i")
+            id3genre=$(metaflac --show-tag=GENRE "$fn" | perl -pe "s/^GENRE=(.*)/\$1/i")
+        
+            flac -c -d "$fn" | \
+            lame -h -m s -b 360 \
+                --tt "$id3title" \
+                --ta "$id3artist" \
+                --tl "$id3album" \
+                --ty "$id3date" \
+                --tn "$id3tracknumber" \
+                --tg "$id3genre" \
+                - "$outfile"
+        else
+            echo &gt;&amp;2 ""$fn" -- skipping."
+        fi
+    done
+else
+    echo &gt;&amp;2 "Usage: "$(basename "$0")" DIRNAME"
+    exit 1
+fi
+</code></pre>
+
+<p>Note that I leave the flac file in place so that it won't get uploaded again every time I run the rsync command. The script then checks for a transcoded mp3 file that exists in the same directory and will only transcode again if this is not the case.</p>
+
+<p>Inspiration for this came from mainly from <a href="http://discussions.apple.com/message.jspa?messageID=788809#788809">this message on the Apple Support Forums</a>.</p>
+
+<h2>Keeping things up to date</h2>
+
+<p>
+Calling the above scripts via cron job should keep everything up to date:
+</p>
+
+<pre><code>
+0 2 * * * rsync -azv -e ssh user@nasdrive:/mnt/disk1/itunes /Volumes/NewHD/
+0 3 * * * osascript /Users/tvmini/Desktop/itunes.scpt
+0 4 * * * sh /Users/tvmini/Desktop/flac2mp3.sh /Volumes/NewHD/itunes
+</code></pre>

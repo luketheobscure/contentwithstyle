@@ -1,0 +1,55 @@
+---
+layout : post
+permalink : /content/xml-validation-in-php/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "XML validation in PHP"
+date : "2006-11-08 06:41:10"
+dateformatted : "November 8 2006, 06:41"
+excerpt : |
+    <p>Working with user input that needs to be valid XML, it turns out that PHP5 has a built-in <a href="http://www.php.net/manual/en/function.dom-domdocument-schemavalidate.php">validation</a> function.</p>
+categories : 
+   - November 2006
+   - "Pascal Opitz"
+---
+
+	<p>Working with user input that needs to be valid XML, it turns out that PHP5 has a built-in <a href="http://www.php.net/manual/en/function.dom-domdocument-schemavalidate.php">validation</a> function.</p>
+
+	<p>For just checking if the XML is well-formed you can just leave the parameter with the filename of the xsd blank.</p>
+
+	<p>See the following example code for a possible application:</p>
+
+<pre><code>
+class XML
+{
+        public static function validate($xml)
+        {
+                libxml_use_internal_errors(true);
+
+                $doc = new DOMDocument('1.0', 'utf-8');
+                $doc-&gt;loadXML($xml);
+
+                $errors = libxml_get_errors();
+                if (empty($errors))
+                {
+                        return true;
+                }
+
+                $error = $errors[ 0 ];
+                if ($error-&gt;level &lt; 3)
+                {
+                        return true;
+                }
+
+                $lines = explode("r", $xml);
+                $line = $lines[($error-&gt;line)-1];
+
+                $message = $error-&gt;message.' at line '.$error-&gt;line.':&lt;br /&gt;'.htmlentities($line);
+
+                return $message;
+        }
+}
+</code></pre>
+
+
+ 

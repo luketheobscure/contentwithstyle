@@ -1,0 +1,27 @@
+---
+layout : post
+permalink : /content/swapping-nodes-in-a-dom-tree/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Swapping nodes in a DOM tree"
+date : "2007-04-12 09:34:02"
+dateformatted : "April 12 2007, 09:34"
+excerpt : |
+    <p>I was quite surprised to find out that the insertBefore method actually does most of the job for you.</p>
+categories : 
+   - April 2007
+   - "Pascal Opitz"
+---
+
+<p>
+I was quite surprised to find out that the insertBefore method actually does most of the job for you.
+<br />
+A detail in <a href="http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-952280727">the manual</a> offers us insight in how: "If the newChild is already in the tree, it is first removed."
+<br />
+<br />
+Hence:
+</p>
+
+<pre><code>
+myNode.parentNode.insertBefore(myNode, myNode.nextSibling);
+</code></pre>

@@ -1,0 +1,31 @@
+---
+layout : post
+permalink : /content/remove-appledouble-folders-on-nix-boxes/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Remove .AppleDouble folders on *NIX boxes"
+date : "2009-01-22 22:54:42"
+dateformatted : "January 22 2009, 22:54"
+excerpt : |
+    <p>Quick note to myself on how to get rid of those silly .AppleDouble folders</p>
+categories : 
+   - January 2009
+   - "Pascal Opitz"
+---
+
+<p>Quick note to myself on how to get rid of those silly .AppleDouble folders</p>
+
+<p>This fails, if there's funny characters in the filenames:</p>
+
+<pre><code>
+find . -name '.AppleDouble' | xargs rm -Rf
+xargs: unmatched single quote
+</code></pre>
+
+<p>
+Hence we need to wrap the string into quotation marks:
+</p>
+
+<pre><code>
+find . -name '.AppleDouble' -printf '"%p"\n' | xargs rm -Rf
+</code></pre>

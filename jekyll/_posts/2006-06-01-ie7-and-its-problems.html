@@ -1,0 +1,45 @@
+---
+layout : post
+permalink : /content/ie7-and-its-problems/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "IE7 and its problems"
+date : "2006-06-01 09:24:53"
+dateformatted : "June 1 2006, 09:24"
+excerpt : |
+    <p>As Mike was busy doing this already on his blog <a href="http://www.donotremove.co.uk/weblog/fixing-donotremove-for-ie7/">donotremove.com</a> I quickly debugged our site for the public IE7 beta 2 that came out today.
+    
+    Like Mike pointed out correctly, most problems are gone once you updated the clearfix hack for IE7.</p>
+categories : 
+   - June 2006
+   - "Pascal Opitz"
+---
+
+	<p>As Mike was busy doing this already on his blog <a href="http://www.donotremove.co.uk/weblog/fixing-donotremove-for-ie7/">donotremove.com</a> I quickly debugged our site for the public IE7 beta 2 that came out today.</p>
+
+	<p>Like Mike pointed out correctly, most problems are gone once you updated the <a href="http://positioniseverything.net/easyclearing.html">clearfix hack</a> for IE7.</p>
+
+	<p>This is done by creating a file that contains</p>
+
+<pre>
+.clearfix
+{
+    zoom: 1;
+}
+</pre>
+
+	<p>and include it with <a href="http://msdn.microsoft.com/workshop/author/dhtml/overview/ccomment_ovw.asp">conditional comments for IE</a></p>
+
+<pre>
+&lt;!--[if gte IE 6]&gt;
+&lt;link rel="stylesheet" type="text/css" media="screen" 
+href="../css/ie_standard.css" /&gt;
+&lt;![endif]--&gt;
+</pre>
+
+	<p>I spent about 45 minutes to walk through a couple of old project websites and this pretty much always did the trick. The only exceptions I came accross were when the <a href="http://www.info.com.ph/~etan/w3pantheon/style/starhtmlbug.html">star html bug</a> was used to filter out IE, i.e. on this website the backgrouds for the rounded corners did not get loaded, and I had to add in a couple of lines to tackle this behaviour.</p>
+
+	<p>So for the future I would recommend to use conditional comments straight away where possible.</p>
+
+
+ 

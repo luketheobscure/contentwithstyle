@@ -1,0 +1,79 @@
+---
+layout : post
+permalink : /content/js-and-css-minification-with-yui/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "JS and CSS minification with YUI"
+date : "2008-07-25 10:49:51"
+dateformatted : "July 25 2008, 10:49"
+excerpt : |
+    <p>At the moment I am working on a large website project, where for maintainability reasons I keep files separated and pretty verbose.
+    Every box and page type would get its own CSS file, and all would be included through on big CSS &#8230;</p>
+categories : 
+   - July 2008
+   - "Pascal Opitz"
+---
+
+	<p>At the moment I am working on a large website project for <a href="http://uktv.co.uk">UKTV</a>, where for maintainability reasons I keep files separated and pretty verbose.<br />
+Every box and page type would get its own CSS file, and all would be included through one big CSS, which looks somehow like this:</p>
+
+<pre><code>
+@import url('../global/tools.css');
+@import url('../global/foo.css');
+@import url('../global/bar.css');
+@import url('../content/foo.css');
+@import url('../content/bar.css');
+@import url('../sidebar/foo.css');
+@import url('../sidebar/bar.css');
+</code></pre>
+
+	<p>The same would go for the JS files, which were broken down into class files and then included one by one:</p>
+
+<pre><code>
+&lt;script type="text/javascript" src="/js/project.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/js/project/foo.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/js/project/bar.js"&gt;&lt;/script&gt;
+</code></pre>
+
+	<p>All together this generated more than different 35 hits, something that inevitably makes the rendering of an HTML page very slow.</p>
+
+	<p>The solution came to me when my friend Simon from <a href="http://seventytwo.co.uk/">Seventytwo</a> highlighted the <a href="http://developer.yahoo.com/yui/compressor/">YUI compression tools</a> to me, first just as a <a href="http://bundleforge.com/">Textmate bundle</a>, but then he pointed out to me that there is <a href="http://www.julienlecomte.net/yuicompressor/">a jar file</a> for it as well.</p>
+
+	<p>20 minutes and one little shellscript later I have one CSS files and one JS file, all nicely minified, plus an IE6 and IE7 stylesheet in conditional comments. </p>
+
+<pre><code>
+cat 
+./templates/css/global/tools.css 
+./templates/css/global/layout.css 
+./templates/css/global/foo.css 
+./templates/css/global/bar.css 
+./templates/css/global/flyouts.css 
+./templates/css/content/foo.css 
+./templates/css/content/bar.css 
+./templates/css/sidebar/foo.css 
+./templates/css/sidebar/bar.css 
+> ./templates/css/shared_concated.css
+
+java -jar yuicompressor-2.3.5.jar 
+./templates/css/shared_concated.css > 
+./templates/css/shared_minified.css
+
+rm ./templates/css/shared_concated.css
+
+cat 
+./templates/js/project.js 
+./templates/js/project/foo.js 
+./templates/js/project/bar.js 
+> ./templates/js/project_concated.js
+
+java -jar yuicompressor-2.3.5.jar 
+./templates/js/project_concated.js > 
+./templates/js/project_minified.js
+
+rm ./templates/js/project_concated.js
+</code></pre>
+
+<p>Neat, me thinks!</p>
+
+
+

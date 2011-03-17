@@ -1,0 +1,43 @@
+---
+layout : post
+permalink : /content/remove-node-in-simplexml/index.html
+author : "Matthias Willerich"
+author_id : 2
+title : "Remove nodes in SimpleXMLElement"
+date : "2009-07-15 18:56:07"
+dateformatted : "July 15 2009, 18:56"
+excerpt : |
+    <p>SimpleXML provides no way to remove XML nodes. DOM to the rescue!</p>
+categories : 
+   - July 2009
+   - "Matthias Willerich"
+---
+
+<blockquote><p>SimpleXML provides no way to remove [...] XML nodes.</p></blockquote>
+
+<p>You might think otherwise and <a href="http://www.kavoir.com/2008/12/how-to-delete-remove-nodes-in-simplexml.html">hack it with <code>unset()</code></a>, as it was done in one of the web applications I inherited at work, but today I found out that this works under some conditions, but not with every setup. I'd love to tell you what exactly the differences are that make it break, but I didn't spend the time tracking it down.</p>
+
+<p>I can tell you what <code>unset()</code> did the the specific setup (PHP 5.1.2 on Windows Vista): Nothing. It happily executed it without error or warning, but also without changing anything.</p>
+
+<p>Luckily S. Gehrig had a good and in my eyes not-hacky idea in <a href="http://stackoverflow.com/questions/262351/remove-a-child-with-a-specific-attribute-in-simplexml-for-php#262556">a thread on stackoverflow.com</a>: He suggests to use the DOM, specifically <code>dom_import_simplexml()</code>, to then simply use <code>removeChild()</code>.</p>
+
+<p>In my case I had a predictable XML structure to parse, and only needed to kick out the first of a set of nodes, so my solution (using the same xml setup as example) is as follows:</p>
+
+<pre><code>
+$data='&lt;data&gt;
+    &lt;seg id="A1"/&gt;
+    &lt;seg id="A5"/&gt;
+    &lt;seg id="A12"/&gt;
+    &lt;seg id="A29"/&gt;
+    &lt;seg id="A30"/&gt;
+&lt;/data&gt;';
+$doc=new SimpleXMLElement($data);
+$dom=dom_import_simplexml($doc-&gt;seg[0]);
+$dom-&gt;parentNode-&gt;removeChild($dom);
+echo $doc-&gt;asXml();
+/*outputs: 
+ * &lt;?xml version="1.0"?&gt;
+ * &lt;data&gt;&lt;seg id="A5"/&gt;&lt;seg id="A12"/&gt;&lt;seg id="A29"/&gt;&lt;seg id="A30"/&gt;&lt;/data&gt;
+ */
+</code></pre>
+<p>For more complex XML structures (and probably closer to most real-life scenarios), I agree with S. in suggesting xpath as a way to detect your unwanted node.</p>

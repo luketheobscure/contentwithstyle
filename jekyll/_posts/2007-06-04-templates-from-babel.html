@@ -1,0 +1,132 @@
+---
+layout : post
+permalink : /content/templates-from-babel/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Templates from Babel?"
+date : "2007-06-04 09:16:11"
+dateformatted : "June 4 2007, 09:16"
+excerpt : |
+    <p>In this article Pascal Opitz discusses the current way of rendering templates used in most MVC style rapid development frameworks.</p>
+categories : 
+   - June 2007
+   - "Pascal Opitz"
+---
+
+<h2>MVC frameworks are in!</h2>
+
+	<p>With the advent of the <a href="http://www.google.co.uk/search?hl=en&amp;client=firefox-a&amp;rls=org.mozilla:en-GB:official&amp;hs=YPP&amp;sa=X&amp;oi=spell&amp;resnum=0&amp;ct=result&amp;cd=1&amp;q=Ruby+on+Rails+hype&amp;spell=1">MVC framework hype</a> and all its <a href="http://forevergeek.com/programming/ruby_on_rails_not_so_productive.php">sceptical voices</a> and <a href="http://www.youtube.com/results?search_query=ruby+on+rails&amp;search=Search">fan videos</a> side-effects we now see the MVC framework becoming more and more popular to quickly knock out applications. Application scaffolding and various out-of-the-box functions seem to be able to improve development drastically.</p>
+
+	<p>I have been using <a href="http://www.cakephp.org/">cakePHP</a> recently on 2 professional projects and it definitely has some great advantages, speeding up my development drastically. But some stuff made me feel a bit puzzled, if not disappointed, and that’s the motivation for this article.</p>
+
+	<h2>Personal observations</h2>
+
+	<p>First of all, there was a bit of a lost control over the output stream. Views get rendered through an application lifecycle and a flush, for example, just didn’t have the effect that I expected.</p>
+
+	<p>Second, I felt that the SQL performance of the database abstraction models just wasn’t that great. I mean, let’s think about this: We do an explain on the table, then we get all the stuff back, then we return the result and use it for rendering. And if there’s a relationship between them, then you have selects for every row to join the additional data in. Doesn’t really cut the mustard, does it?</p>
+
+	<p>But what really struck me bad, and this is what I am going to write about in this article, was the views and how the rendering gets done.</p>
+
+	<h2>But first, how do these frameworks work?</h2>
+
+	<p>MVC frameworks usually break up the application into database abstraction (model), business logic (controller) and output rendering (view). This, in most cases, is done with a strict naming convention that has been put in place to make changes easier and the development process faster. To find out more you can read the <a href="http://en.wikipedia.org/wiki/Model-view-controller">Wikipedia article</a> on this subject or <a href="http://justfuckinggoogleit.com/?q=mvc">just google for more</a></p>
+
+	<h2>Why Layer Separation?</h2>
+
+	<p>So why did people come up with layer separation and what do they usually think it is good for?</p>
+
+	<ul>
+
+
+	<li>Each layer can be maintained without changes affecting the other parts of the application layers</li>
+		<li>Separate testing of each layer is possible, i.e. through Unit tests</li>
+		<li>It is possible to swap a layer for something different, i.e. MySQL against PostgreSQL</li>
+		<li>It often is easier to find the individual files when they need to be changed (Ruby on Rails calls this “Convention over configuration”)</li>
+	</ul>
+
+	<h2>A look into how we are rendering the view layer</h2>
+
+	<h3>We look around …</h3>
+
+	<p>Starting my look around with cakePHP, I found that the views are embedding inline PHP that is able to call any framework method or custom PHP script. And that’s a lot. Have a look into the <a href="http://cakephp.org/files/cakesheet.pdf">cakePHP cheat sheet</a> and you’ll see what I mean.</p>
+
+	<p>Researching other frameworks I found that the same approach goes for most of them. Let’s have a look at a Ruby on Rails example, found on <a href="http://www.onlamp.com/pub/a/onlamp/2007/01/05/revisiting-ruby-on-rails-revisited-2.html">ONLamp.com</a> :</p>
+
+<pre><code>
+&lt;%= select("recipe", "category_id", Category.find(:all).collect
+{|c| [c.name, c.id] }) %&gt;
+</code></pre>
+
+	<p>The same goes for <a href="http://www.djangoproject.com/documentation/templates/">Django</a>, a python based framework, this time using curly brackets:</p>
+
+<pre><code>
+{% block content %}
+&lt;h1&gt;{{ section.title }}&lt;/h1&gt;
+</code></pre>
+
+	<p>Discussing this amongst the CwS writers and other developers reveals that most frameworks offer some kind of mechanism to push data to the template from the controller so that direct method calls can be avoided. Examples would be the <a href="http://rails.rubyonrails.com/classes/ActionView/Partials.html">Partials in RoR</a> or the $controller-&gt;set() method in cakePHP.</p>
+
+	<p>Still, those mechanisms are language and framework specific.</p>
+
+	<h3>... and find a lot</h3>
+
+	<p>So the situation we’re facing is that every individual framework has an different way of rendering the view templates.</p>
+
+	<p>
+Most solutions either incorporate the scripting language directly (i.e. cakePHP using inline PHP calls), are framework/CMS specific (i.e. TypoScript) or non-standard (i.e. Smarty).</p>
+
+	<p>Just the evaluation of these is already a pain, even when we restrict ourselves to a somehow narrowed down field of research, i.e. “MVC based frameworks in PHP”. </p>
+
+	<h3>We want power …</h3>
+
+	<p>Having script languages available makes template rendering extremely powerful. And there are good reasons for why we find those powerful mechanisms in the view rendering process: 
+
+To introduce script calls into the template rendering itself usually happens because there is a need for more than just straight output, but somehow more complex processing like conditions, loops, includes or sorting.</p>
+
+	<h3>... but get confusion?</h3>
+
+	<p>As we could see earlier, when we looked into different frameworks, we often have function calls directly from the view itself. Sure, it is a powerful mechanism to render templates, but is it a really clean approach?</p>
+
+	<p>One of the most common <a href="http://www.43things.com/entries/view/1487677">arguments against using PHP</a> is that its leading to <a href="http://en.wikipedia.org/wiki/Spaghetti_code">spaghetti code</a> . Most people that bash PHP pull out the “it’s just HTML with messy script tags” card first thing, and in my opinion they are right to say that this leads to an unmaintainable state.</p>
+
+	<p>Introducing inline code into the view rendering can cancel out the benefits of layer separation. If, for example, during an update process, parameter counts or method names get changed, we have two revise the views as well, otherwise the view could lead to a script error.</p>
+
+	<p>Even more drastic would be a port to another language. If we use a native scripting language like inline PHP or inline Ruby, we basically have to bin the whole application and do a complete rewrite. The view will not be reusable at all.</p>
+
+	<h3>There are other ways. </h3>
+
+	<p><a href="http://onsmalltalk.com/programming/smalltalk/rails-vs-seaside/">Seaside</a> for example, a Smalltalk based Framework that follows a very different paradigm, doesn’t contain any templates, but renders markup through methods only. This definitely seems drastic to most people, so it does for me, but I have to admit that it is a very clean approach. </p>
+
+	<h3>Are standards an alternative?</h3>
+
+	<p>Talking standards there are only a couple of techniques that spring to mind that offer interchangeable and platform-independent functionality… These being <a href="http://www.w3.org/TR/xslt">XSLT</a> and <a href="http://www.xml.com/pub/a/2002/03/20/xsl-fo.html">XSL-FO</a>.</p>
+
+	<p>XSL Transformations offer the power to do processing of any complexity if needed. XSLT parsers are available for most platforms out there, including PHP, ASP, ASP.NET, Python and many more.</p>
+
+	<h2>So what do I think?</h2>
+
+	<p>What I don’t really understand is why, after going to the trouble of creating system where model, view and controller are nicely separated, one would come up with a mixture of controller functions and markup in the view, that renders all the valid points above obsolete. </p>
+
+	<p>I am not sure if this is a misconception on my side when I digested the term “Layer separation”, but embedding inline PHP or script calls to controller methods in my eyes is a bit similar to putting inline styles into XHTML pages. They become less maintainable.</p>
+
+	<p>As mentioned above, we have the W3C standards that offer all the power we need for more intelligent template rendering. XSLT cuts out the learning curve for another proprietary template language, it’s powerful and it’s cross platform. Yet I see hardly any serious CMS or Frameworks embracing those official W3C standards available outside of the enterprise sector.</p>
+
+	<p>The only XSL based free blogging system I currently know about is <a href="http://21degrees.com.au/products/symphony/">Symphony</a> but there might be others.</p>
+
+	<h3>Where is the web going?</h3>
+
+	<p>I recently ask myself this question more often than usual. Whereas a couple of years ago the web seemed to be aiming for better standards, with XHTML and XML/XSLT being the way out of the mess, the outlook nowadays seems much more clustered, diverse and maybe even confusing.</p>
+
+	<p>The current focus seems to be rapid development and AJAX integration, the new buzz word is Web 2.0, coming along with whole new variety of Frameworks, Libraries and Communities that bring new life to the web community. All this is very good. </p>
+
+	<p>But I think that in a bigger question we have to ask ourselves is:
+
+Why forget the old merits? Sure, frameworks and libraries can help to cut down development time, but can they cut out knowledge of the core techniques?</p>
+
+	<p>And yes, a big variety of techniques to choose from is great. Yet, is this the reason to disregard well defined standards and end up with a babble of languages and approaches, all adding to the initial learning curve?</p>
+
+	<p>If we go for a certain framework and technique now, but later the popular paradigm changes into something else, will we have to abandon most of what we’re using… or can we carry some standardised parts over to the new platform?</p>
+
+	<p>In any case, what we work with is down to each individual developer and the requirements of the individual project.</p>
+
+	<p>I hope I have highlighted some valid points in this article and am looking forward to your feedback.</p>

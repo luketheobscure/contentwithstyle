@@ -1,0 +1,16 @@
+---
+layout : post
+permalink : /content/reglib-an-event-delegation-based-framework/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Reglib, an Event Delegation based Framework"
+date : "2008-11-14 22:50:27"
+dateformatted : "November 14 2008, 22:50"
+excerpt : |
+    <p>Via the <a href="http://ajaxian.com">ajaxian</a> I came across the new javascript based framework <a href="http://blogs.sun.com/greimer/entry/reglib_javascript_library_now_available">reglib</a>, written by Gregory Reimer. It is based on some very clever thoughts and makes heavy use of <a href="http://icant.co.uk/sandbox/eventdelegation/">Event Delegation</a>.</p>
+categories : 
+   - November 2008
+   - "Pascal Opitz"
+---
+
+<p>Via the <a href="http://ajaxian.com">ajaxian</a> I came across the javascript based framework <a href="http://blogs.sun.com/greimer/entry/reglib_javascript_library_now_available">reglib</a>, written by Gregory Reimer. It is based on some very clever thoughts and makes heavy use of <a href="http://icant.co.uk/sandbox/eventdelegation/">Event Delegation</a>.</p><p>Event Delegation is a technique I used quite a lot at Tesco. Back then <a href="http://www.linkedin.com/in/matthewjdunn">Matt Dunn</a>, who was the lead UI developer there, introduced me to its benefits and how it <a href="http://cherny.com/webdev/70/javascript-event-delegation-and-event-hanlders">helps to keep the memory footprint down</a>.</p><p>reglib goes a step further. It utilizes the body element as single entry point for all events, and identifies the nodes that triggered the event so it can match them with&nbsp; functions that were assigned through the library and execute them.</p><p>This cuts out the wait for until the DOM is<span> Loaded by the browser, something that is pretty much essential and implemented into most other frameworks like <a href="http://docs.jquery.com/Events/ready">JQuery</a> or <a href="http://mootools.net/docs/Utilities/DomReady">MooTools</a></span>. Gregory Reimer, who has written reglib based on his work for <a href="http://www.sun.com">sun.com</a>, seems to dislike this and even <a href="http://blogs.sun.com/greimer/entry/on_the_inelegance_of_modern">describes this as anti-pattern</a>.</p>

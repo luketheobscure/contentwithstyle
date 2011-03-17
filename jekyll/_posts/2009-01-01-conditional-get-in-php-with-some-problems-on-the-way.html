@@ -1,0 +1,59 @@
+---
+layout : post
+permalink : /content/conditional-get-in-php-with-some-problems-on-the-way/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Conditional get in PHP - with some problems on the way"
+date : "2009-01-01 18:05:03"
+dateformatted : "January 1 2009, 18:05"
+excerpt : |
+    <p>Happy new year everyone. If you're anything like me, the credit crunch doomsday news and the gross overeating of the past festivities make you want to slim down and become more resourceful. Using Caching, <a href="http://en.wikipedia.org/wiki/HTTP_ETag">ETags</a> and the <a href="http://www.checkupdown.com/status/E304.html">304 HTTP code</a> can help to cut down on traffic. But working on a conditional get came with some problems ...</p>
+categories : 
+   - January 2009
+   - "Pascal Opitz"
+---
+
+<p>Happy new year everyone. If you're anything like me, the credit crunch doomsday news and the gross overeating of the past festivities make you want to slim down and become more resourceful. Using Caching, <a href="http://en.wikipedia.org/wiki/HTTP_ETag">ETags</a> and the <a href="http://www.checkupdown.com/status/E304.html">304 HTTP code</a> can help to cut down on traffic. But working on a conditional get came with some problems ...</p>
+
+<p>The first issue I had is that Firefox didn't send the proper headers. I was't entirely sure why, but after a long google search and trial and error it turned out that it was happening as long as there weren't the correct Cache-Control or Pragma directives. Setting Cache-Control to 'public, must-revalidate' and Pragma to 'cache' got it finally working.</p>
+
+<p>However, the PHP snippets that <a href="http://annevankesteren.nl/2005/05/http-304">I looked at</a> <a href="http://simonwillison.net/2003/Apr/23/conditionalGet/">for reference</a> utilize the HTTP_IF_MODIFIED_SINCE and HTTP_IF_NONE_MATCH entries in the $_SERVER array. Something that I could not get to work at all. Using the <code>apache_request_headers()</code> circumnavigates this issue, and the headers If-None-Match and If-Modified-Since are pulled correctly.</p>
+
+<p>So here's the code that works for me as it stands:</p>
+
+<pre><code>
+function checkBrowserCache($identifier, $last_modified) {
+  $arr = apache_request_headers();
+  $etag = '"' . md5($last_modified . $identifier) . '"';
+  $client_etag = @$arr['If-None-Match'] ? trim(@$arr['If-None-Match']) : false;
+  $client_last_modified_date = @$arr['If-Modified-Since'] ? trim(@$arr['If-Modified-Since']) : false;
+  $client_last_modified = date('D, d M Y H:i:s \G\M\T', strtotime($client_last_modified_date));
+
+  $etag_match = true;    
+  
+  if(!$client_last_modified || !$client_etag) {
+    $etag_match = false;
+  }
+  
+  if($etag_match &amp;&amp; $client_last_modified &gt; $last_modified) {
+    $etag_match = false;
+  } 
+  
+  if($etag_match &amp;&amp; $client_etag != $etag) {
+    $etag_match = false;
+  }
+
+  header('Cache-Control:public, must-revalidate', true);
+  header('Pragma:cache', true);
+  header('ETag: '.$etag);
+
+  if($etag_match) {
+    header('Not Modified',true,304);
+    die();
+  }
+
+  header('Last-Modified:'.date('D, d M Y H:i:s \G\M\T', $last_modified));
+}
+</code></pre>
+
+<p>Still, one problem remained: Firefox refuses to do as all other browsers that I tested. After getting a 304 correctly, it will pull the page again in its entirety. This means a full 200 OK response every second time Firefox does a request.</p>

@@ -1,0 +1,35 @@
+---
+layout : post
+permalink : /content/checking-for-object-literals/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Checking for object literals"
+date : "2006-10-03 07:46:03"
+dateformatted : "October 3 2006, 07:46"
+excerpt : |
+    <p>Such a basic thing to do, but still, I didn&#8217;t have to do it until now:
+    Checking if an object literal is defined.</p>
+categories : 
+   - October 2006
+   - "Pascal Opitz"
+---
+
+	<p>Such a basic thing to do, but still, I didn&#8217;t have to do it until now:<br />
+Checking if an object literal is defined.</p>
+
+<pre><code>
+var my_object_literal
+{
+  'my_property' : 'I exist'
+};
+
+if (window.my_object_literal)
+{
+   alert(my_object_literal.my_property);
+}
+</code></pre>
+
+	<p>via <a href="http://www.faqts.com/knowledge_base/view.phtml/aid/16419">FAQTS</a></p>
+
+
+ 

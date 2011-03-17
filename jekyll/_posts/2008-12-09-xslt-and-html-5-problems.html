@@ -1,0 +1,60 @@
+---
+layout : post
+permalink : /content/xslt-and-html-5-problems/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "XSLT and HTML 5 problems"
+date : "2008-12-09 17:47:46"
+dateformatted : "December 9 2008, 17:47"
+excerpt : |
+    <p>Sometimes I'm really getting annoyed about the lack of control that XSLT sometimes gives about what target formats are supported and what output it generates</p>
+categories : 
+   - December 2008
+   - "Pascal Opitz"
+---
+
+<p>Sometimes I'm really getting annoyed about the lack of control that
+XSLT sometimes gives about what target formats are supported and what
+output it generates</p>
+
+<p>I'm trying to utilize a canvas tag, and <a href="http://excanvas.sourceforge.net/">excanvas</a>. Now the problem that I'm having is that excanvas is hooking up to onreadystatechange, and therefore will be executed before the ondomready event that jQuery offers.</p>
+
+<p>Which means I have to either do inline JS, and generate the canvas tags per JS, in order to create valid HTML 4, or I have to use the HTML 5 Doctype and can write the canvas tag in there just like that.</p>
+
+<p>Problem is: XSLT 1.0 doesn't support the HTML 5 to generate a doctype, and the output encoding meta tag that it selfishly applies is not valid in HTML 5 either. Any ideas anyone?</p>
+
+<h2><em>UPDATE</em></h2>
+
+<p>
+Quite a fruitful discussion in the comments.
+<br />
+So for anyone else who's reading this: Bottom line is that, even with existing technology for XSLT, it is possible to create HTML 5.
+</p>
+
+<p>
+The first issue we were discussing was the DTD. HTML 5 in its current draft caters the generation with XSLT by providing a fallback DTD:
+</p>
+
+<pre><code class="html">
+&lt;!DOCTYPE html PUBLIC "XSLT-compat"&gt;
+</code></pre>
+
+<p>
+The other issue was the meta tag with the charset attribute, that HTML 5 introduces in order to target the character set: 
+</p>
+
+<pre><code class="html">
+&lt;meta charset="..." /&gt; 
+</code></pre>
+
+<p>
+It is just not possible to generate exactly that with libXSL, because libXSL forcefully replaces it with an HTML 4 style meta tag. 
+</p>
+
+<pre><code class="html">
+&lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+</code></pre>
+
+<p>
+This is not a problem though, as the old meta tag in its encoding state is a valid declaration of the character set, too.
+</p>

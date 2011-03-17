@@ -1,0 +1,34 @@
+---
+layout : post
+permalink : /content/xsltext-cdata-and-php5/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "XSL:TEXT, CDATA and PHP5"
+date : "2006-10-20 07:53:06"
+dateformatted : "October 20 2006, 07:53"
+excerpt : |
+    <p>Right, so I am applying disable-output-escaping=&quot;yes&quot; on an xsl:text element containing some CDATA, but the output is still coming with escaped entities &hellip;</p>
+categories : 
+   - October 2006
+   - "Pascal Opitz"
+---
+
+	<p>Right, so I am applying disable-output-escaping=&quot;yes&quot; on an xsl:text element containing some CDATA, but the output is still coming with escaped entities &#8230;</p>
+
+<pre><code>
+&lt;xsl:text disable-output-escaping="yes"&gt;
+&lt;![CDATA[This is a &lt;p&gt; tag]]&gt;
+&lt;/xs:text&gt;
+</code></pre>
+
+	<p>This is actually a <a href="http://bugs.php.net/bug.php?id=29837&#38;edit=1">glitch</a> in the PHP5 built in transformation engine, and the good news is that there is a fix for this. The predefined constant <a href="http://us3.php.net/manual/en/ref.libxml.php#libxml.constants">LIBXML_NOCDATA</a> will fix this behaviour to the one you expect:</p>
+
+<pre><code>
+$xsl_dom-&gt;loadXML($xsl, LIBXML_NOCDATA);
+or
+$xsl_dom-&gt;load($xsl_file_location, LIBXML_NOCDATA);
+</code></pre>
+
+
+
+ 

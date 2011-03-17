@@ -1,0 +1,95 @@
+---
+layout : post
+permalink : /content/custom-zend-form-image-upload-element/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Custom Zend Form Image Upload Element"
+date : "2009-06-29 23:59:44"
+dateformatted : "June 29 2009, 23:59"
+excerpt : |
+    <p>It really is time to post something, isn't it? Here is a quick way to have an image preview inside of a form based on Zend Form.</p>
+categories : 
+   - June 2009
+   - "Pascal Opitz"
+---
+
+<p>It really is time to post something, isn't it? Here is a quick way to have an image preview inside of a form based on Zend Form.</p>
+
+<h2>Assumptions</h2>
+
+<p>I am using the auto include mechanism for this one, utilizing the PEAR naming convention, and all my files will sit underneath a Shared folder within the library folder.</p>
+
+<h2>A custom form Element</h2>
+
+<p>This is sitting under Shared/Form/Element/Image.php</p>
+
+<pre><code>
+&lt;?php
+class Shared_Form_Element_Image extends Zend_Form_Element 
+{
+  public $helper = "imageUpload";
+  public $options;
+  
+  public function __construct($image_name, $attributes, $data_item) {
+    $this->options = $data_item;
+    parent::__construct($image_name, $attributes);
+  }
+}
+</code></pre>
+
+<p>As you can see, the form Element itself doesn't contain much code, but it does overwrite the property 'helper'. Which bings us to the next file:</p>
+
+<h2>A custom view helper</h2>
+
+<p>In our example, this sits under Shared/Views/Helpers/ImageUpload.php</p>
+
+<pre><code>
+&lt;?php
+class Shared_View_Helper_ImageUpload extends Zend_View_Helper_FormFile {
+
+  public function imageUpload($name, $value, $attribs, $options) {
+    $str = parent::formFile($name, $attribs = null);
+
+    if(!empty($options[$name])) {
+      $str .= $this->getImagePreview($name, $options[$name]);
+    } else {
+      $str .= $this->getEmptyPreview();
+    }
+    
+    return $str;
+  }
+
+  private function getImagePreview($name, $path) {
+    $img = ($this->view->doctype()->isXhtml())
+       ? '&amp;lt;img src="/'.$path.'" alt="'.$name.'" />'
+       : '&amp;lt;img src="/'.$path.'" alt="'.$name.'">';
+    
+    return '&amp;lt;p class="preview">'.$img.'&amp;lt;/p>';
+  }
+  
+  private function getEmptyPreview() {
+    return '&amp;lt;p class="preview">No image uploaded.&amp;lt;/p>';
+  }
+}
+</code></pre>
+
+<p>Pretty straight forward, I am just subclassing the FormFile helper that Zend brings us. However, you might want to create a different helper all together, if you need to use much more customized markup than I do.</p>
+
+<h2>Invocation</h2>
+
+<p>The form itself will no contain the image path as element, therefore we need to inject it into the form data inside the Controller, then invoke the Form with that data:</p>
+
+<pre><code>
+$data['image'] = $image_path;
+$form = new My_From($data);
+</code></pre>
+
+<p>Inside our Form, all we need to do now is to add a new element using our custom ImageUpload element:</p>
+
+<pre><code>
+$preview = new Shared_Form_Element_Image('image', null, $options);
+$preview->addValidator('Count', false, 1);
+$preview->addValidator('Extension', false, 'jpg,png,gif');
+$preview->setLabel('My Image');
+$fields[] = $preview;
+</code></pre>

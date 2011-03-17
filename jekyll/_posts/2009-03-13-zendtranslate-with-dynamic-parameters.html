@@ -1,0 +1,43 @@
+---
+layout : post
+permalink : /content/zendtranslate-with-dynamic-parameters/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Zend_Translate with dynamic parameters"
+date : "2009-03-13 11:46:57"
+dateformatted : "March 13 2009, 11:46"
+excerpt : |
+    <p>Just a quick snippet to have dynamic parameters in the underscore function, without having to write sprintf every time.</p>
+categories : 
+   - March 2009
+   - "Pascal Opitz"
+---
+
+<p>Just a quick snippet to have dynamic parameters in the underscore function, without having to write sprintf every time.</p>
+
+<pre><code>
+&lt;?php
+class Translate extends Zend_Translate {
+  public function _() {
+    $args = func_get_args();
+    $num = func_num_args();
+    
+    $adapter = $this->getAdapter();
+    $args[0] = $adapter->_($args[0]);
+        
+    if($num &lt;= 1) {
+      return $args[0];
+    }
+        
+    return call_user_func_array('sprintf', $args);  
+  }
+}
+</code></pre>
+
+<p>Usage would be something like the following:</p>
+
+<pre><code>
+$t = new Translate('array', $array_translation, $lang);
+echo $t->_('My name is %s', 'Pascal');
+echo $t->_('I have a %s and a %s', 'Cat', 'Horse');
+</code></pre>

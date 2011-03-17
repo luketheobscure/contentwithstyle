@@ -1,0 +1,48 @@
+---
+layout : post
+permalink : /content/moddeflate-and-ie6-bug/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "mod_deflate and IE6 bug"
+date : "2007-04-20 12:46:50"
+dateformatted : "April 20 2007, 12:46"
+excerpt : |
+    <p>This one was very strange. IE 6.0.29 would randomly come up with white pages.</p>
+categories : 
+   - April 2007
+   - "Pascal Opitz"
+---
+
+<p>
+This one was very strange. IE 6.0.29 would randomly come up with white pages. On the local servers it would come up fine, and so it did in any other version of IE, nor when using the <a href="http://tredosoft.com/Multiple_IE">multiple IE installer</a>.
+</p>
+
+<p>
+Trying to use <a href="http://www.xk72.com/charles/">Charles</a> to sincerely scrutinize the headers and output for dodgy characters made the problem just go away.
+</p>
+
+<p>
+Turns out that the gzip compression added by mod_deflate just wasn't well digested. The following lines in the http.conf caused the misery.
+</p>
+
+<pre><code>
+AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/x-javascript
+BrowserMatch ^Mozilla/4 gzip-only-text/html
+BrowserMatch ^Mozilla/4.0[678] no-gzip
+BrowserMatch bMSIE  !no-gzip !gzip-only-text/html
+</code></pre>
+
+<p>
+Changing the last two lines would turn off the mod_deflate compression for IE6 but leave it in for IE7:
+</p>
+
+<pre><code>
+BrowserMatch ^Mozilla/4.[0678] no-gzip
+BrowserMatch bMSIEs7  !no-gzip !gzip-only-text/html
+</code></pre>
+
+<p>
+For testing the HTTP headers that come through one can use the <a href="http://www.blunck.se/iehttpheaders/iehttpheaders.html">ieHTTPHeaders plugin</a> for IE or <a href="http://www.rexswain.com/httpview.html">Rex Swain's HTTP viewer</a>.
+<br />
+<strong>Happy Debugging!</strong>
+</p>

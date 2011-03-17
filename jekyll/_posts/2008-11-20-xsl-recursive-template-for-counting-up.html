@@ -1,0 +1,35 @@
+---
+layout : post
+permalink : /content/xsl-recursive-template-for-counting-up/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "XSL: Recursive template for counting up"
+date : "2008-11-20 11:20:29"
+dateformatted : "November 20 2008, 11:20"
+excerpt : |
+    <p>Thought I'd share this with you, even though it's nothing special: A simple XSL template that recursively increments a counter, so you can do a set number of operations.</p>
+categories : 
+   - November 2008
+   - "Pascal Opitz"
+---
+
+<p>Thought I'd share this with you, even though it's nothing special: A simple XSL template that recursively increments a counter, so you can do a set number of operations.</p>
+
+<pre><code class="xml">
+&lt;xsl:template name="empty-score"&gt;
+ &lt;xsl:param name="target_cnt" /&gt;
+ &lt;xsl:param name="current_cnt" /&gt;
+ 
+ &lt;xsl:if test="$target_cnt &gt; $current_cnt"&gt;
+  &lt;p&gt;
+   Target Cnt: &lt;xsl:value-of select="$target_cnt" /&gt;
+   Current Cnt: &lt;xsl:value-of select="$current_cnt" /&gt;
+  &lt;/p&gt;
+  
+  &lt;xsl:call-template name="empty-score"&gt;
+   &lt;xsl:with-param name="target_cnt" select="$target_cnt" /&gt;
+   &lt;xsl:with-param name="current_cnt" select="$current_cnt + 1" /&gt;
+  &lt;/xsl:call-template&gt; 
+ &lt;/xsl:if&gt; 
+&lt;/xsl:template&gt;
+</code></pre>

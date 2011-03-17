@@ -1,0 +1,24 @@
+---
+layout : post
+permalink : /content/faster-website-moving-with-lftp/index.html
+author : "Pascal Opitz"
+author_id : 1
+title : "Faster website moving with lftp"
+date : "2006-04-01 09:00:36"
+dateformatted : "April 1 2006, 09:00"
+excerpt : |
+    <p>Consider <a href="http://lftp.yar.ru/get.html">lftp</a> to be the better alternative to ftp when it comes to moving your website. Unlike the standard ftp command line client it had the function &ldquo;mirror&rdquo; ... </p>
+categories : 
+   - April 2006
+   - "Pascal Opitz"
+---
+
+	<p>Consider <a href="http://lftp.yar.ru/get.html">lftp</a> to be the better alternative to ftp when it comes to moving your website. Unlike the standard ftp command line client it had the function &#8220;mirror&#8221;. <br />
+And that is a dead handy one when you don&#8217;t want to ftp your whole website down to your machine and back to the new host &#8230;</p>
+
+	<p>After grabbing the source from the <a href="ftp://ftp.cs.tu-berlin.de/pub/net/ftp/lftp/">german mirror site</a> I compiled the program with the usual linux commands (./configure, make, make install).</p>
+
+	<p>Then move to the HTML folder on the new machine, type <code>lftp -u myuser myhost</code> to log onto the FTP server. There, move to the directory that you wanna grab and then type <code>mirror .</code> and that&#8217;s it.</p>
+
+
+ 

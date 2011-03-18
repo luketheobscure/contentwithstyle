@@ -16,3 +16,12 @@ layout: article
 <div class="article">
     {{ content }}
 </div>
+
+{% if page.comments and page.comments != "" %}
+<div class="comments" id="comments">
+    <h2>Comments</h2>
+    <ul class="comments-list">
+        {{ page.comments }}
+    </ul>
+</div>
+{% endif %}

@@ -11,6 +11,8 @@ excerpt : |
 categories : 
    - December 2010
    - "Matthias Willerich"
+comments : |
+    
 ---
 
 <p>So, this app I hadn't been looking at in a few months did not work at all. I traced the bug down to a method that itself called a parent method. The parent only contains __call and __callStatic methods, and for some reason __callStatic was called, although the class it was called from was an object instance.</p>

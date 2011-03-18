@@ -147,8 +147,8 @@ class Exporter {
                 $str .= $comment['username'];
             }
                     
-            $str .= 'on ' . date('F j Y, H:i', strtotime($comment['created']));
-            $str .= '<a href="#comment-' . $comment['id'] .'">#</a>';
+            $str .= ' on ' . date('F j Y, H:i', strtotime($comment['created']));
+            $str .= ' <a href="#comment-' . $comment['id'] .'">#</a>';
             $str .= "\n";
             $str .= '</p>';
             $str .= "\n";
@@ -200,7 +200,7 @@ class Exporter {
     private function getCommentsQuery($id) {
         $query = "SELECT 
                 c.*, 
-                u.name, 
+                u.name as username, 
                 u.email,
                 u.website
             FROM comments c
